@@ -182,6 +182,7 @@ export default class {
     );
 
 
+    this.duration = end - start;
     this.buffer = newArrayBuffer;
     this.setCues(0, newArrayBuffer.duration);
     this.playout.buffer = this.buffer;
