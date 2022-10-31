@@ -332,12 +332,24 @@ export default class {
       const track = this.getActiveTrack();
       const timeSelection = this.getTimeSelection();
 
-      track.removePart3(timeSelection.start, timeSelection.end, this.ac, track);
-      track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+      const trackStart = this.getStartTime();
+      const trackEnd = this.getEndTime();
 
+
+      track.trim(trackStart, timeSelection.start);
+      track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
       this.setTimeSelection(0, 0);
       this.adjustDuration();
       this.drawRequest();
+
+      track.trim(trackEnd, timeSelection.end);
+      track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+      this.setTimeSelection(0, 0);
+      this.adjustDuration();
+      this.drawRequest();
+
+      console.log("New code running!");
+
       this.ee.emit("cutfinished");
     });
 
