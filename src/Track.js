@@ -164,6 +164,15 @@ export default class {
     return this.ee.emit("razorCutFinished", razorCutObject);
   }
 
+  removePart3(point1, point2, audioContext, track) {
+    const trackStart = this.getStartTime();
+    const trackEnd = this.getEndTime();
+
+    trim(trackStart, point1);
+    trim(point2, trackEnd);
+
+  }
+
   removePart2(point1, point2, audioContext, track) {
     let start;
     let end;
@@ -188,7 +197,7 @@ export default class {
     this.playout.buffer = this.buffer;
 
 
-    this.ee.emit("saveCutManipulation", this.buffer, track);
+//    this.ee.emit("saveCutManipulation", this.buffer, track);
 
     // return this.ee.emit("razorCutFinished", razorCutObject);
   }

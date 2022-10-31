@@ -332,7 +332,7 @@ export default class {
       const track = this.getActiveTrack();
       const timeSelection = this.getTimeSelection();
 
-      track.removePart2(timeSelection.start, timeSelection.end, this.ac, track);
+      track.removePart3(timeSelection.start, timeSelection.end, this.ac, track);
       track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
 
       this.setTimeSelection(0, 0);
