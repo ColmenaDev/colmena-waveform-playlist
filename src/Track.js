@@ -164,6 +164,35 @@ export default class {
     return this.ee.emit("razorCutFinished", razorCutObject);
   }
 
+  removePart2(point1, point2, audioContext, track) {
+    let start;
+    let end;
+    if (point1 <= point2) {
+      start = point1;
+      end = point2;
+    } else {
+      start = point2;
+      end = point1;
+    }
+
+    let newArrayBuffer = this.createArrayBuffer(
+      start,
+      end,
+      audioContext
+    );
+
+
+    this.buffer = newArrayBuffer;
+    this.setCues(0, newArrayBuffer.duration);
+    this.playout.buffer = this.buffer;
+
+
+    this.ee.emit("saveCutManipulation", this.buffer, track);
+
+    // return this.ee.emit("razorCutFinished", razorCutObject);
+  }
+
+
   removePart(point1, point2, audioContext, track) {
     this.ee.emit("saveCutManipulation", this.buffer, track);
 
