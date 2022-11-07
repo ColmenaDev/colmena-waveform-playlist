@@ -22,6 +22,7 @@ export default class {
     this.name = "Untitled";
     this.customClass = undefined;
     this.waveOutlineColor = undefined;
+    this.id = uuidv4();
     this.gain = 1;
     this.fades = {};
     this.peakData = {
