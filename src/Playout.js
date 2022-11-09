@@ -5,8 +5,9 @@ function noEffects(node1, node2) {
 }
 
 export default class {
-  constructor(ac, buffer, masterGain = ac.createGain()) {
+  constructor(ac, buffer, ee, masterGain = ac.createGain()) {
     this.ac = ac;
+    this.ee = ee;
     this.gain = 1;
     this.effectsGraph = noEffects;
     this.masterEffectsGraph = noEffects;
@@ -16,12 +17,17 @@ export default class {
   }
 
   applyFade(type, start, duration, shape = "logarithmic") {
-    if (type === FADEIN) {
-      createFadeIn(this.fadeGain.gain, shape, start, duration);
-    } else if (type === FADEOUT) {
-      createFadeOut(this.fadeGain.gain, shape, start, duration);
-    } else {
+    if (![FADEIN, FADEOUT].includes(type)) {
       throw new Error("Unsupported fade type");
+    }
+    try {
+      if (type === FADEIN) {
+        createFadeIn(this.fadeGain.gain, shape, start, duration);
+      } else if (type === FADEOUT) {
+        createFadeOut(this.fadeGain.gain, shape, start, duration);
+      }
+    } catch (e) {
+      this.ee.emit("error", "error applying fade");
     }
   }
 

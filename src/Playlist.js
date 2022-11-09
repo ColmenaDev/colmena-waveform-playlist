@@ -13,6 +13,7 @@ import TimeScale from "./TimeScale";
 import Track from "./Track";
 import Playout from "./Playout";
 import AnnotationList from "./annotation/AnnotationList";
+import { v4 as uuidv4 } from "uuid";
 
 import RecorderWorkerFunction from "./utils/recorderWorker";
 import ExportWavWorkerFunction from "./utils/exportWavWorker";
@@ -33,6 +34,7 @@ export default class {
     this.showTimescale = false;
     // whether a user is scrolling the waveform
     this.isScrolling = false;
+    this.isCutting = false;
 
     this.fadeType = "logarithmic";
     this.masterGain = 1;
@@ -84,7 +86,7 @@ export default class {
             this.recordingTrack.setCues(0, audioBuffer.duration);
             this.recordingTrack.setBuffer(audioBuffer);
             this.recordingTrack.setPlayout(
-              new Playout(this.ac, audioBuffer, this.masterGainNode)
+              new Playout(this.ac, audioBuffer, this.ee, this.masterGainNode)
             );
             this.adjustDuration();
           })
@@ -328,18 +330,6 @@ export default class {
       ]);
     });
 
-    ee.on("cut", () => {
-      const track = this.getActiveTrack();
-      const timeSelection = this.getTimeSelection();
-
-      track.removePart(timeSelection.start, timeSelection.end, this.ac, track);
-      track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
-
-      this.setTimeSelection(0, 0);
-      this.adjustDuration();
-      this.drawRequest();
-      this.ee.emit("cutfinished");
-    });
 
     ee.on("razorCut", () => {
       const Track = this.getActiveTrack();
@@ -376,6 +366,99 @@ export default class {
 
       track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
       this.drawRequest();
+    });
+
+    ee.on("cut", async () => {
+      this.isCutting = true;
+      const track = this.getActiveTrack();
+      const timeSelection = this.getTimeSelection();
+      const trackStart = track.startTime;
+      const trackEnd = track.endTime;
+
+      // Handle edge cases...
+      const cleanup = () => {
+        this.setTimeSelection(0, 0);
+        this.adjustDuration();
+        this.drawRequest();
+        this.isCutting = false;
+      };
+      if (
+        timeSelection.start < track.startTime &&
+        timeSelection.end > track.endTime
+      ) {
+        this.removeTrack(track);
+        cleanup();
+        return;
+      } else if (timeSelection.start < track.startTime) {
+        if (track.fadeIn) {
+          track.removeFade(track.fadeIn);
+          track.fadeIn = undefined;
+        }
+        track.trim(timeSelection.end, trackEnd);
+        track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+        cleanup();
+        return;
+      } else if (timeSelection.end > track.endTime) {
+        if (track.fadeOut) {
+          track.removeFade(track.fadeOut);
+          track.fadeOut = undefined;
+        }
+        track.trim(trackStart, timeSelection.start);
+        track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+        cleanup();
+        return;
+      }
+
+      /*
+      const track = this.getActiveTrack();
+      const timeSelection = this.getTimeSelection();
+
+      track.removePart(timeSelection.start, timeSelection.end, this.ac, track);
+      track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+
+      this.setTimeSelection(0, 0);
+      this.adjustDuration();
+      this.drawRequest();
+      this.ee.emit("cutfinished");
+      */
+
+      const trackNames = this.tracks.map((track) => track.name);
+      let newName = track.name;
+      let counter = 1;
+      while (trackNames.includes(newName)) {
+        newName = track.name + "-" + counter;
+        counter++;
+      }
+      await this.load([
+        {
+          ...track.getTrackDetails(),
+          name: newName,
+        },
+      ]);
+      const newTrack = this.tracks.pop();
+      const originalTrackIdx = this.tracks.findIndex(
+        (iteratedTrack) => iteratedTrack.id === track.id
+      );
+      this.tracks.splice(originalTrackIdx + 1, 0, newTrack);
+
+      // Trim
+      track.trim(trackStart, timeSelection.start);
+      newTrack.trim(timeSelection.end, trackEnd);
+
+      // Remove fades
+      if (track.fadeOut !== undefined) {
+        track.removeFade(track.fadeOut);
+        track.fadeOut = undefined;
+      }
+      if (newTrack.fadeIn !== undefined) {
+        newTrack.removeFade(newTrack.fadeIn);
+        newTrack.fadeIn = undefined;
+      }
+
+      // Redraw
+      track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+      newTrack.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+      cleanup();
     });
 
     ee.on("zoomin", () => {
@@ -454,6 +537,7 @@ export default class {
           const playout = new Playout(
             this.ac,
             audioBuffer,
+            this.ee,
             this.masterGainNode
           );
 
@@ -647,7 +731,12 @@ export default class {
     const mg = this.offlineAudioContext.createGain();
 
     this.tracks.forEach((track) => {
-      const playout = new Playout(this.offlineAudioContext, track.buffer, mg);
+      const playout = new Playout(
+        this.offlineAudioContext,
+        track.buffer,
+        this.ee,
+        mg
+      );
       playout.setEffects(track.effectsGraph);
       playout.setMasterEffects(this.effectsGraph);
       track.setOfflinePlayout(playout);
