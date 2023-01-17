@@ -43,11 +43,13 @@ export default class {
   // TODO extract into a plugin
   initExporter() {
     // this.exportWorker = new Worker(
-    //   /* webpackChunkName: "foo-worker" */ new URL("./utils/exportWavWorker.js")
-    //  ,
-    //  {
-    //    type: "module"
-    //  }
+    //   /* webpackChunkName: "foo-worker" */ new URL(
+    //     "./utils/exportWav.worker.js",
+    //     import.meta.url
+    //   ),
+    //   {
+    //     type: "module",
+    //   }
     // );
     this.exportWorker = new ExportWavWorker();
   }

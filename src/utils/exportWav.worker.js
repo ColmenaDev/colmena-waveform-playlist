@@ -132,7 +132,7 @@ function exportMP3(type) {
     var right = Mp3R.subarray(i, i + samplesPerFrame);
     var mp3buf = mp3enc.encodeBuffer(left, right);
     if (mp3buf.length > 0) {
-      //console.log("remaining time:", Math.round(remaining / sampleRate), "s");
+      // console.log("remaining time:", Math.round(remaining / sampleRate), "s");
       buffer.push(new Int8Array(mp3buf));
     }
     remaining -= samplesPerFrame;
@@ -142,7 +142,7 @@ function exportMP3(type) {
     buffer.push(new Int8Array(mp3buf));
   }
 
-  //console.log("MP3 encoding done.");
+  // console.log("MP3 encoding done.");
 
   const audioBlob = new Blob(buffer, { type });
   postMessage(audioBlob);
