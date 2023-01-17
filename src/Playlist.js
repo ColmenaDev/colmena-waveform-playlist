@@ -12,8 +12,8 @@ import TimeScale from "./TimeScale";
 import Track from "./Track";
 import Playout from "./Playout";
 import AnnotationList from "./annotation/AnnotationList";
-
 import RecorderWorkerFunction from "./utils/recorderWorker";
+import ExportWavWorker from "./utils/exportWav.worker.js";
 
 export default class {
   constructor() {
@@ -42,12 +42,14 @@ export default class {
 
   // TODO extract into a plugin
   initExporter() {
-    this.exportWorker = new Worker(
-      new URL("./utils/exportWavWorker.js", import.meta.url),
-      {
-        type: "module",
-      }
-    );
+    // this.exportWorker = new Worker(
+    //   /* webpackChunkName: "foo-worker" */ new URL("./utils/exportWavWorker.js")
+    //  ,
+    //  {
+    //    type: "module"
+    //  }
+    // );
+    this.exportWorker = new ExportWavWorker();
   }
 
   // TODO extract into a plugin

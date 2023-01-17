@@ -23,7 +23,8 @@
     "web-worker": "^1.2.0",
     "webpack": "^5.68.0",
     "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.7.3"
+    "webpack-dev-server": "^4.7.3",
+    "worker-loader": "^3.0.8"
   },
   "directories": {
     "build": "build",
@@ -36,13 +37,14 @@
     "fade-curves": "^1.0.2",
     "fade-maker": "^1.0.3",
     "inline-worker": "^1.1.0",
+    "lamejs": "github:zhuker/lamejs",
     "lodash.assign": "^4.0.0",
     "lodash.defaultsdeep": "^4.6.1",
     "lodash.forown": "^4.0.0",
     "tone": "^14.7.77",
-    "lamejs": "github:zhuker/lamejs",
     "virtual-dom": "^2.1.1",
-    "webaudio-peaks": "^1.0.0"
+    "webaudio-peaks": "^1.0.0",
+    "worker-loader": "^3.0.8"
   },
   "scripts": {
     "clean": "rm -Rf dist && rm -Rf lib && rm -Rf build && rm -Rf styles",
