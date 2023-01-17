@@ -155,7 +155,7 @@ function clear() {
 }
 
 /* exportOpus not supported yet... 44.1kHz not supported by Opus */
-onmessage = function onmessage(e) {
+function onmessage(e) {
   if (e.data.command) {
     switch (e.data.command) {
       case "init": {
@@ -183,4 +183,4 @@ onmessage = function onmessage(e) {
       }
     }
   }
-};
+}
