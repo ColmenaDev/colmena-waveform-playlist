@@ -13,7 +13,7 @@ import Track from "./Track";
 import Playout from "./Playout";
 import AnnotationList from "./annotation/AnnotationList";
 import RecorderWorkerFunction from "./utils/recorderWorker";
-import ExportWavWorker from "./utils/exportWav.worker.js";
+import ExportWavWorkerFunction from "./utils/exportWavWorker";
 
 export default class {
   constructor() {
@@ -42,16 +42,7 @@ export default class {
 
   // TODO extract into a plugin
   initExporter() {
-    // this.exportWorker = new Worker(
-    //   /* webpackChunkName: "foo-worker" */ new URL(
-    //     "./utils/exportWav.worker.js",
-    //     import.meta.url
-    //   ),
-    //   {
-    //     type: "module",
-    //   }
-    // );
-    this.exportWorker = new ExportWavWorker();
+    this.exportWorker = new InlineWorker(ExportWavWorkerFunction);
   }
 
   // TODO extract into a plugin
