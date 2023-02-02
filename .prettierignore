@@ -5,3 +5,4 @@ img
 lib
 node_modules
 styles
+src/utils/exportWorker.js

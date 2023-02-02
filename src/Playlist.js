@@ -13,7 +13,7 @@ import Track from "./Track";
 import Playout from "./Playout";
 import AnnotationList from "./annotation/AnnotationList";
 import RecorderWorkerFunction from "./utils/recorderWorker";
-import ExportWavWorkerFunction from "./utils/exportWavWorker";
+import ExportWavWorkerFunction from "./utils/exportWorker";
 
 export default class {
   constructor() {
