@@ -666,7 +666,7 @@ export default class {
     if (type === "buffer") {
       this.ee.emit("audiorenderingfinished", type, audioBuffer);
       this.isRendering = false;
-    } else if (["wav", "mp3"].includes(type)) {
+    } else if (["wav", "mp3","opus","aac"].includes(type)) {
       this.exportWorker.postMessage({
         command: "init",
         config: {

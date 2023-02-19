@@ -107,6 +107,8 @@ export default function () {
   }
 
     function exportAAC(type) {
+      console.log("AAC encoding ENTER");
+
         // TODO: support mono
       const channels = 2;
       let number_of_channels = 2;
@@ -194,7 +196,7 @@ export default function () {
           encoder.encode(audio_data);
       }
 
-      await encoder.flush();
+      encoder.flush();
 
       console.log("AAC encoding done.");
 
@@ -242,7 +244,7 @@ export default function () {
       buffer.push(new Int8Array(mp3buf));
     }
 
-    // console.log("MP3 encoding done.");
+    console.log("MP3 encoding done.");
 
     const audioBlob = new Blob(buffer, { type });
     postMessage(audioBlob);
@@ -277,7 +279,7 @@ export default function () {
           exportOpus(e.data.type);
           break;
         }
-      case "exportAAC": {
+        case "exportAAC": {
           exportAAC(e.data.type);
           break;
         }
