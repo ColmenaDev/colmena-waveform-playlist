@@ -102,6 +102,14 @@ export default function () {
     postMessage(audioBlob);
   }
 
+  function exportOpus(type) {
+
+  }
+
+  function exportAAC(type) {
+
+  }
+
   function exportMP3(type) {
     var buffer = [];
     const bufferL = mergeBuffers(recBuffersL, recLength);
@@ -153,7 +161,6 @@ export default function () {
     recBuffersR = [];
   }
 
-  /* exportOpus not supported yet... 44.1kHz not supported by Opus */
   onmessage = function onmessage(e) {
     if (e.data.command) {
       switch (e.data.command) {
@@ -171,6 +178,14 @@ export default function () {
         }
         case "exportMP3": {
           exportMP3(e.data.type);
+          break;
+        }
+        case "exportOpus": {
+          exportOpus(e.data.type);
+          break;
+        }
+      case "exportAAC": {
+          exportAAC(e.data.type);
           break;
         }
         case "clear": {

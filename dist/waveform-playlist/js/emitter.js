@@ -235,6 +235,10 @@ $container.on("click", ".btn-download-mp3", function () {
   ee.emit('startaudiorendering', 'mp3');
 });
 
+$container.on("click", ".btn-download-aac", function () {
+  ee.emit('startaudiorendering', 'aac');
+});
+
 $container.on("click", ".btn-download-opus", function () {
   ee.emit('startaudiorendering', 'opus');
 });
@@ -329,11 +333,21 @@ function displayDownloadLink(link, type) {
   if (type == 'opus') {
     var $link = $("<a/>", {
       'href': link,
-      'download': 'waveformplaylist' + dateString + '.opus',
+      'download': 'waveformplaylist' + dateString + '.weba',
       'text': 'Download mix ' + dateString,
       'class': 'btn btn-small btn-download-link'
     });
   }
+
+  if (type == 'aac') {
+    var $link = $("<a/>", {
+      'href': link,
+      'download': 'waveformplaylist' + dateString + '.aac',
+      'text': 'Download mix ' + dateString,
+      'class': 'btn btn-small btn-download-link'
+    });
+  }
+
 
   $('.btn-download-link').remove();
   $('.btn-download').after($link);
@@ -407,7 +421,7 @@ ee.on("audiosourceserror", function(e) {
 });
 
 ee.on('audiorenderingfinished', function (type, data) {
-  if (type == 'wav' || type == 'mp3' || type == 'opus'){
+  if (type == 'wav' || type == 'mp3' || type == 'opus' || type == 'aac'){
     if (downloadUrl) {
       window.URL.revokeObjectURL(downloadUrl);
     }

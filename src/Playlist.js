@@ -697,6 +697,16 @@ export default class {
           command: "exportMP3",
           type: "audio/mp3",
         });
+      } else if (type === "opus") {
+        this.exportWorker.postMessage({
+          command: "exportOpus",
+          type: "audio/webm",
+        });
+      } else if (type === "aac") {
+        this.exportWorker.postMessage({
+          command: "exportAAC",
+          type: "audio/aac",
+        });
       } else {
         this.exportWorker.postMessage({
           command: "exportWAV",
