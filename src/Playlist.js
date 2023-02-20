@@ -691,12 +691,7 @@ export default class {
       });
 
       /* opus support not implemented yet */
-      if (type === "mp3") {
-        this.exportWorker.postMessage({
-          command: "exportMP3",
-          type: "audio/mp3",
-        });
-      } else {
+      if (["mp3", "wav"].includes(type)) {
         this.exportWorker.postMessage({
           command: "exportWAV",
           type: "audio/wav",
