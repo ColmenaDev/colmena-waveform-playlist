@@ -6,7 +6,6 @@ export default function () {
 
   function init(config) {
     sampleRate = config.sampleRate;
-    lamejs();
   }
 
   function record(inputBuffer) {
