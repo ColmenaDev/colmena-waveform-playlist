@@ -216,9 +216,11 @@ $container.on("click", ".btn-zoom-out", function() {
 $container.on("click", ".btn-trim-audio", function() {
   ee.emit("trim");
 });
-
 $container.on("click", ".btn-cut-audio", function() {
   ee.emit("cut");
+});
+$container.on("click", ".btn-split-audio", function() {
+  ee.emit("split");
 });
 
 $container.on("click", ".btn.print", function() {
@@ -231,6 +233,10 @@ $container.on("click", ".btn-download", function () {
 
 $container.on("click", ".btn-download-mp3", function () {
   ee.emit('startaudiorendering', 'mp3');
+});
+
+$container.on("click", ".btn-download-aac", function () {
+  ee.emit('startaudiorendering', 'aac');
 });
 
 $container.on("click", ".btn-download-opus", function () {
@@ -308,7 +314,7 @@ function displayLoadingData(data) {
 function displayDownloadLink(link, type) {
   var dateString = (new Date()).toISOString();
 
-  if (type == 'wav'){
+  if (type == 'wav') {
     var $link = $("<a/>", {
       'href': link,
       'download': 'waveformplaylist' + dateString + '.wav',
@@ -316,7 +322,7 @@ function displayDownloadLink(link, type) {
       'class': 'btn btn-small btn-download-link'
     });
   }
-  if (type == 'mp3'){
+  if (type == 'mp3') {
     var $link = $("<a/>", {
       'href': link,
       'download': 'waveformplaylist' + dateString + '.mp3',
@@ -324,10 +330,19 @@ function displayDownloadLink(link, type) {
       'class': 'btn btn-small btn-download-link'
     });
   }
-  if (type == 'opus'){
+  if (type == 'opus') {
     var $link = $("<a/>", {
       'href': link,
-      'download': 'waveformplaylist' + dateString + '.opus',
+      'download': 'waveformplaylist' + dateString + '.weba',
+      'text': 'Download mix ' + dateString,
+      'class': 'btn btn-small btn-download-link'
+    });
+  }
+
+  if (type == 'aac') {
+    var $link = $("<a/>", {
+      'href': link,
+      'download': 'waveformplaylist' + dateString + '.aac',
       'text': 'Download mix ' + dateString,
       'class': 'btn btn-small btn-download-link'
     });
@@ -364,10 +379,6 @@ ee.on("mastervolumechange", function(volume) {
 
 ee.on("cut", function() {
   displayLoadingData("A cut operation has started.");
-});
-
-$container.on("click", ".btn-split-audio", function() {
-  ee.emit("split");
 });
 
 ee.on("cutfinished", function() {
@@ -410,7 +421,7 @@ ee.on("audiosourceserror", function(e) {
 });
 
 ee.on('audiorenderingfinished', function (type, data) {
-  if (type == 'wav' || type == 'mp3' || type == 'opus'){
+  if (type == 'wav' || type == 'mp3' || type == 'opus' || type == 'aac'){
     if (downloadUrl) {
       window.URL.revokeObjectURL(downloadUrl);
     }

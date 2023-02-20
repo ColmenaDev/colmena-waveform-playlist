@@ -373,6 +373,7 @@ export default class {
       }
 
       track.calculatePeaks(this.samplesPerPixel, this.sampleRate);
+
       this.drawRequest();
     });
 
@@ -627,11 +628,8 @@ export default class {
     }
 
     this.isRendering = true;
-    this.offlineAudioContext = new OfflineAudioContext(
-      2,
-      44100 * this.duration,
-      44100
-    );
+    this.offlineAudioContext = new (window.OfflineAudioContext ||
+      window.webkitOfflineAudioContext)(2, 44100 * this.duration, 44100);
 
     const setUpChain = [];
 
@@ -665,7 +663,7 @@ export default class {
     if (type === "buffer") {
       this.ee.emit("audiorenderingfinished", type, audioBuffer);
       this.isRendering = false;
-    } else if (["wav", "mp3"].includes(type)) {
+    } else if (["wav", "mp3", "opus", "aac"].includes(type)) {
       this.exportWorker.postMessage({
         command: "init",
         config: {
@@ -691,7 +689,17 @@ export default class {
       });
 
       /* opus support not implemented yet */
-      if (["mp3", "wav"].includes(type)) {
+      if (type === "opus") {
+        this.exportWorker.postMessage({
+          command: "exportOpus",
+          type: "audio/webm",
+        });
+      } else if (type === "aac") {
+        this.exportWorker.postMessage({
+          command: "exportAAC",
+          type: "audio/aac",
+        });
+      } else if (["mp3", "wav"].includes(type)) {
         this.exportWorker.postMessage({
           command: "exportWAV",
           type: "audio/wav",
@@ -861,7 +869,8 @@ export default class {
     const selected = this.getTimeSelection();
     const playoutPromises = [];
 
-    const start = startTime || this.pausedAt || this.cursor;
+    const start =
+      startTime === 0 ? 0 : startTime || this.pausedAt || this.cursor;
     let end = endTime;
 
     if (!end && selected.end !== selected.start && selected.end > start) {
