@@ -47,7 +47,7 @@ export default class {
     this.recordingTrack.setName("Recording");
     this.recordingTrack.setEnabledStates();
     this.recordingTrack.setEventEmitter(this.ee);
-    this.tracks.push(track);
+    this.tracks.push(this.recordingTrack);
 
   }
 
