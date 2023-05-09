@@ -9,6 +9,7 @@ navigator.getUserMedia = (navigator.getUserMedia ||
 
 function gotStream(stream) {
   userMediaStream = stream;
+  playlist.initRecorder(userMediaStream, track = undefined, name = "Voice Track");
   playlist.initRecorder(userMediaStream);
   $(".btn-record").removeClass("disabled");
 }

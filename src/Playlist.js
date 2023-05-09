@@ -46,23 +46,29 @@ export default class {
   }
 
   // TODO extract into a plugin
-  initRecorder(stream) {
+  initRecorder(stream, track, name = "Recording") {
+    this.fixedRecordingTrack = (track !== undefined);
+    this.recordingTrack = track;
     this.mediaRecorder = new MediaRecorder(stream);
 
     this.mediaRecorder.onstart = () => {
-      const start = this.cursor;
+    if (!this.fixedRecordingTrack) {
       const track = new Track();
-      track.setName("Recording");
+      track.setName(name);
       track.setEnabledStates();
       track.setEventEmitter(this.ee);
-      track.setStartTime(start);
 
       this.recordingTrack = track;
       this.tracks.push(track);
 
-      this.chunks = [];
-      this.working = false;
-    };
+    }
+
+    const start = this.cursor;
+    this.recordingTrack.setStartTime(start);
+
+    this.chunks = [];
+    this.working = false;
+  };
 
     this.mediaRecorder.ondataavailable = (e) => {
       this.chunks.push(e.data);
@@ -98,7 +104,7 @@ export default class {
     this.mediaRecorder.onstop = () => {
       this.chunks = [];
       this.working = false;
-      this.cursor = this.duration + 0.3;
+//      this.cursor = this.duration + 0.3;
     };
 
     this.recorderWorker = new InlineWorker(RecorderWorkerFunction);
@@ -973,7 +979,7 @@ export default class {
       track.setState("none");
       playoutPromises.push(
         track.schedulePlay(this.ac.currentTime, start, undefined, {
-          shouldPlay: this.shouldTrackPlay(track),
+          shouldPlay: (track !== this.recordingTrack) && this.shouldTrackPlay(track),
         })
       );
     });
