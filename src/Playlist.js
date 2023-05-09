@@ -43,25 +43,21 @@ export default class {
   // TODO extract into a plugin
   initExporter() {
     this.exportWorker = new InlineWorker(ExportWavWorkerFunction);
+    this.recordingTrack = new Track();
+    this.recordingTrack.setName("Recording");
+    this.recordingTrack.setEnabledStates();
+    this.recordingTrack.setEventEmitter(this.ee);
+    this.tracks.push(track);
+
   }
 
   // TODO extract into a plugin
   initRecorder(stream, track, name = "Recording") {
     this.fixedRecordingTrack = (track !== undefined);
-    this.recordingTrack = track;
+    track = this.recordingTrack;
     this.mediaRecorder = new MediaRecorder(stream);
 
     this.mediaRecorder.onstart = () => {
-    if (!this.fixedRecordingTrack) {
-      const track = new Track();
-      track.setName(name);
-      track.setEnabledStates();
-      track.setEventEmitter(this.ee);
-
-      this.recordingTrack = track;
-      this.tracks.push(track);
-
-    }
 
     const start = this.cursor;
     this.recordingTrack.setStartTime(start);
