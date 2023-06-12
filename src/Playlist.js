@@ -896,12 +896,26 @@ export default class {
   }
 
   pause() {
-    if (!this.isPlaying()) {
-      return Promise.all(this.playoutPromises);
-    }
+      if (!this.isPlaying())
+      {
+          return Promise.all(this.playoutPromises);
+      }
 
-    this.pausedAt = this.getCurrentTime();
-    return this.playbackReset();
+      if (this.mediaRecorder && this.mediaRecorder.state === "recording")
+      {
+          this.mediaRecorder.pause();
+          this.pausedAt = this.getCurrentTime();
+      }
+
+      if (this.mediaRecorder && this.mediaRecorder.state === "paused")
+      {
+          this.mediaRecorder.resume();
+      }
+
+      if (this.isPlaying()) {
+          this.pausedAt = this.getCurrentTime();
+          return this.playbackReset();
+      }
   }
 
   stop() {
