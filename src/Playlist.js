@@ -896,23 +896,29 @@ export default class {
   }
 
   pause() {
-      if (!this.isPlaying())
+      // console.log("pause\n");
+
+      if (!this.isPlaying() && this.mediaRecorder)
       {
+	  if (this.mediaRecorder.state === "recording")
+	  {
+	      // console.log("media recorder pause\n");
+              this.mediaRecorder.pause();
+              this.pausedAt = this.getCurrentTime();
+	      return this.playbackReset();
+	  }
+
+	  if (this.mediaRecorder.state === "paused")
+	  {
+	      // console.log("media recorder resume\n");
+              this.mediaRecorder.resume();
+	      return this.playbackReset();
+	  }
           return Promise.all(this.playoutPromises);
       }
 
-      if (this.mediaRecorder && this.mediaRecorder.state === "recording")
+      if (this.isPlaying())
       {
-          this.mediaRecorder.pause();
-          this.pausedAt = this.getCurrentTime();
-      }
-
-      if (this.mediaRecorder && this.mediaRecorder.state === "paused")
-      {
-          this.mediaRecorder.resume();
-      }
-
-      if (this.isPlaying()) {
           this.pausedAt = this.getCurrentTime();
           return this.playbackReset();
       }
