@@ -14,6 +14,7 @@ import Playout from "./Playout";
 import AnnotationList from "./annotation/AnnotationList";
 import ExportWavWorkerFunction from "./utils/exportWavWorker";
 import RecorderWorkerFunction from "./utils/recorderWorker";
+import AudioProject from "hertzjs";
 
 export default class {
   constructor() {
@@ -38,6 +39,16 @@ export default class {
     this.durationFormat = "hh:mm:ss.uuu";
     this.isAutomaticScroll = false;
     this.resetDrawTimer = undefined;
+
+    // Hertjz stuff
+    this.hertzjsProject = undefined;
+    this.hertjsMapper = new Map();
+
+
+  }
+
+  setHertzjsProject(hertzjsProject) {
+    this.hertzjsProject = hertzjsProject;
   }
 
   // TODO extract into a plugin
@@ -411,6 +422,15 @@ export default class {
         this.isScrolling = false;
       }, 200);
     });
+
+    ee.on('hertjz-loaded', (hertjzProject) => {
+      this.hertzjsProject = hertjzProject;
+      this.copyFromHertzjs(hertjzProject);
+    })
+
+    ee.on('audiosourcesrendered', () => {
+      // this.commit();
+    })
   }
 
   load(trackList) {
@@ -896,32 +916,28 @@ export default class {
   }
 
   pause() {
-      // console.log("pause\n");
+    // console.log("pause\n");
 
-      if (!this.isPlaying() && this.mediaRecorder)
-      {
-	  if (this.mediaRecorder.state === "recording")
-	  {
-	      // console.log("media recorder pause\n");
-              this.mediaRecorder.pause();
-              this.pausedAt = this.getCurrentTime();
-	      return this.playbackReset();
-	  }
-
-	  if (this.mediaRecorder.state === "paused")
-	  {
-	      // console.log("media recorder resume\n");
-              this.mediaRecorder.resume();
-	      return this.playbackReset();
-	  }
-          return Promise.all(this.playoutPromises);
+    if (!this.isPlaying() && this.mediaRecorder) {
+      if (this.mediaRecorder.state === "recording") {
+        // console.log("media recorder pause\n");
+        this.mediaRecorder.pause();
+        this.pausedAt = this.getCurrentTime();
+        return this.playbackReset();
       }
 
-      if (this.isPlaying())
-      {
-          this.pausedAt = this.getCurrentTime();
-          return this.playbackReset();
+      if (this.mediaRecorder.state === "paused") {
+        // console.log("media recorder resume\n");
+        this.mediaRecorder.resume();
+        return this.playbackReset();
       }
+      return Promise.all(this.playoutPromises);
+    }
+
+    if (this.isPlaying()) {
+      this.pausedAt = this.getCurrentTime();
+      return this.playbackReset();
+    }
   }
 
   stop() {
@@ -1208,5 +1224,98 @@ export default class {
       tracks,
       effects: this.effectsGraph,
     };
+  }
+
+
+  //----------- HERTZJS --------------
+
+  /**
+   * This method is called by the event listener.
+   * This method syncs the hertzjs project to the current waveform project.
+   * Hertjz supports multiple clips per track, however waveform does not, and for that, each hertzjs clip
+   * will be stored in a separate waveform track.
+   */
+  async copyFromHertzjs(hertjzProject) {
+    this.tracks = []
+    hertjzProject.tracks.forEach((hertzjsTrack) => {
+      hertzjsTrack.clips.forEach(async hertjzClip => {
+        //Create a new waveform track
+        console.log('NIDHAL-LOG:syncWithHertjs-1', hertjzClip.path)
+        const track = {
+          src: hertjzClip.path,
+          name: hertjzClip.path.match(/\/([^/]+)$/)[1],
+          start: hertjzClip.startsAt,
+          cuein: hertjzClip.offset,
+          cueout: hertjzClip.duration
+        }
+        //Add effects
+        hertjzClip.effects.forEach(hertzjsEffect => {
+          switch (hertzjsEffect.name) {
+            case 'fade-in':
+              if (hertzjsEffect.params && hertzjsEffect.params.duration > 0) {
+                track.fadeIn = {
+                  duration: hertzjsEffect.params.duration
+                }
+              }
+              break;
+
+            case 'fade-out':
+              if (hertzjsEffect.params && hertzjsEffect.params.duration > 0) {
+                track.fadeOut = {
+                  duration: hertzjsEffect.params.duration
+                }
+              }
+              break;
+          }
+        })
+        this.load([track]);
+        console.log(this.tracks)
+      })
+    })
+  }
+
+  commit() {
+    if (!this.hertzjsProject) {
+      this.hertzjsProject = new AudioProject();
+      console.log('Creating a new Hertzjs Instance')
+    }
+
+    window.hjz = this.hertzjsProject;
+    //Copy all the waveform settings to hertzjs and commits the change
+    //Delete all the tracks in hertzjs in the current version 
+    this.hertzjsProject.tracks = [];
+    this.tracks.forEach(track => {
+      let hertzjsTrack = this.hertzjsProject.newTrack();
+      let hertzjsClip = hertzjsTrack.newClip(track.src);
+      hertzjsClip.setStartsAt(track.startTime)
+      hertzjsClip.setDuration(track.cueOut)
+      hertzjsClip.setOffset(track.cueIn)
+      //TODO:Add effects here
+    })
+    this.hertzjsProject.commit()
+  }
+
+  undo() {
+    if (!this.hertzjsProject)
+      return false;
+
+    let currentIndex = this.hertzjsProject.history.currentIndex;
+    if (currentIndex <= 1)
+      return false;
+    this.hertzjsProject.undo();
+    this.copyFromHertzjs(this.hertzjsProject)
+  }
+
+  redo() {
+    let isInLastVersion = this.hertzjsProject.isInLastVersion();
+    if (isInLastVersion)
+      return false;
+    console.log('currently in the', this.hertzjsProject.history.currentIndex, 'version', isInLastVersion ? ' LAST VERSION' : '')
+    this.hertzjsProject.redo();
+    this.copyFromHertzjs(this.hertzjsProject)
+  }
+
+  getHertjzProjectInstance() {
+    return this.hertzjsProject;
   }
 }

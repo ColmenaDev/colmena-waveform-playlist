@@ -35,6 +35,11 @@ export default class {
     this.startTime = 0;
     this.endTime = 0;
     this.stereoPan = 0;
+    this.hertzjsTrack = undefined;
+  }
+
+  setHertzjsTrack(hertjzTrack) {
+    this.hertzjsTrack = hertjzTrack;
   }
 
   setEventEmitter(ee) {
@@ -209,7 +214,7 @@ export default class {
     let buffer_duration = (this.buffer.length * 2) / (this.buffer.sampleRate * this.buffer.numberOfChannels);
 
     let timeSplitOffset = start - this.getStartTime() + this.cueIn;
-    console.log("timeSplitOffset: "+timeSplitOffset);
+    console.log("timeSplitOffset: " + timeSplitOffset);
 
     if (timeSplitOffset < 0) {
       // outside interval left
@@ -723,9 +728,8 @@ export default class {
       "div.controls",
       {
         attributes: {
-          style: `height: ${numChan * data.height}px; width: ${
-            data.controls.width
-          }px; position: absolute; left: 0; z-index: 10;`,
+          style: `height: ${numChan * data.height}px; width: ${data.controls.width
+            }px; position: absolute; left: 0; z-index: 10;`,
         },
       },
       controls
@@ -884,9 +888,8 @@ export default class {
         `div.channel.channel-${channelNum}`,
         {
           attributes: {
-            style: `height: ${data.height}px; width: ${width}px; top: ${
-              channelNum * data.height
-            }px; left: ${startX}px; position: absolute; margin: 0; padding: 0; z-index: 1;`,
+            style: `height: ${data.height}px; width: ${width}px; top: ${channelNum * data.height
+              }px; left: ${startX}px; position: absolute; margin: 0; padding: 0; z-index: 1;`,
           },
         },
         channelChildren
@@ -948,9 +951,8 @@ export default class {
       `div.channel-wrapper${audibleClass}${customClass}`,
       {
         attributes: {
-          style: `margin-left: ${channelMargin}px; height: ${
-            data.height * numChan
-          }px;`,
+          style: `margin-left: ${channelMargin}px; height: ${data.height * numChan
+            }px;`,
         },
       },
       channelChildren

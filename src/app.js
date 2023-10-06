@@ -2,6 +2,7 @@ import _defaults from "lodash.defaultsdeep";
 import createElement from "virtual-dom/create-element";
 import EventEmitter from "event-emitter";
 import Playlist from "./Playlist";
+import AudioProject from "hertzjs";
 
 export function init(options = {}, ee = EventEmitter()) {
   if (options.container === undefined) {
@@ -94,6 +95,76 @@ export function init(options = {}, ee = EventEmitter()) {
   config.container.appendChild(rootNode);
   playlist.tree = tree;
   playlist.rootNode = rootNode;
+  $('#hertjzjs-load-editor').click(() => {
+    playlist.loadFromJson(`{
+          "cursor":0,
+          "tracks":[
+              {
+                  "clips":[
+                  
+                      {
+                          "path":"/waveform-playlist/media/audio/Sound1.mp3",
+                          "startsAt":0,
+                          "offset":0,
+                          "duration":6,
+                          "effects":[
+                              {
+                                  "name" : "fade-in",
+                                  "params":{
+                                      "duration" : 4
+                                  }
+                              }
+                              
+                          ]
+                      }
+                  ]
+              },
+              {
+                "clips":[
+                
+                    {
+                        "path":"/waveform-playlist/media/audio/Sound1.mp3",
+                        "startsAt":6,
+                        "offset":0,
+                        "duration":6,
+                        "effects":[
+                            {
+                                "name" : "fade-out",
+                                "params":{
+                                    "duration" : 4
+                                }
+                            }
+                            
+                        ]
+                    }
+                ]
+            }
+              
+          ]
+      }
+    `);
+  })
+
+  $('#hertjzjs-commit').click(() => {
+    playlist.commit();
+  })
+
+  $('#hertjzjs-undo').click(() => {
+    playlist.undo()
+  })
+
+  $('#hertjzjs-redo').click(() => {
+    playlist.redo()
+  })
+
+  $('#hertjzjs-show-json').click(() => {
+    console.log(playlist.getHertjzProjectInstance().toJson())
+  })
+
+  $('#hertjzjs-copy-from').click(() => {
+    playlist.copyFromHertzjs(playlist.getHertjzProjectInstance());
+  })
+
 
   return playlist;
 }
