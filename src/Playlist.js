@@ -430,6 +430,7 @@ export default class {
 
     ee.on('audiosourcesrendered', () => {
       // this.commit();
+      console.log(this.tracks)
     })
   }
 
@@ -1286,7 +1287,17 @@ export default class {
     this.hertzjsProject.tracks = [];
     this.tracks.forEach(track => {
       let hertzjsTrack = this.hertzjsProject.newTrack();
-      let hertzjsClip = hertzjsTrack.newClip(track.src);
+      //TODO: if the files are local, we need to copy them locally
+      let hertzjsClip = undefined;
+      if (track.src instanceof File) {
+        let url = URL.createObjectURL(track.src)
+        console.log('File is not a string, it is a file, creating a blog and a url and referencing it', url)
+        hertzjsClip = hertzjsTrack.newClip(url);
+
+      }
+      else if (typeof track.src === 'string' || track.src instanceof String) {
+        hertzjsClip = hertzjsTrack.newClip(track.src);
+      }
       hertzjsClip.setStartsAt(track.startTime)
       hertzjsClip.setDuration(track.cueOut)
       hertzjsClip.setOffset(track.cueIn)
