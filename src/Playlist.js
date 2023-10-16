@@ -4,6 +4,9 @@ import diff from "virtual-dom/diff";
 import patch from "virtual-dom/patch";
 import InlineWorker from "inline-worker";
 
+import JSZip from 'jszip';
+
+
 import { pixelsToSeconds } from "./utils/conversions";
 import { resampleAudioBuffer } from "./utils/audioData";
 import LoaderFactory from "./track/loader/LoaderFactory";
@@ -430,7 +433,8 @@ export default class {
 
     ee.on('audiosourcesrendered', () => {
       // this.commit();
-      console.log(this.tracks)
+      // console.log(this.tracks)
+      console.log(this.hertzjsProject)
     })
   }
 
@@ -1329,4 +1333,139 @@ export default class {
   getHertjzProjectInstance() {
     return this.hertzjsProject;
   }
+
+
+  /**
+   * This method will export the project as a zip file
+   */
+  exportZipProject() {
+    const zip = new JSZip();
+    zip.file('project.json', JSON.stringify(this.hertzjsProject));
+    zip.file('README.txt', 'Nothing here!');
+
+    const fetchPromises = [];
+
+    //Now we'll be saving all the media files for the current version
+    this.hertzjsProject.tracks.forEach(track => {
+      track.clips.forEach(clip => {
+        console.log('Processing clip', clip)
+        if (clip.path.indexOf("blob:") >= 0) {
+
+          console.log('adding the file', clip.path)
+
+          const fetchPromise = fetch(clip.path).then(resp => resp.blob()).then(data => {
+            console.log('adding file to zip', data)
+
+            let fileName = clip.path.split('/').pop()
+            zip.file('blob.' + fileName, data)
+
+          });
+          fetchPromises.push(fetchPromise)
+        }
+      })
+    })
+
+    return Promise.all(fetchPromises).then(() => {
+      // Generate the ZIP file after all operations are finished
+      return zip.generateAsync({ type: 'blob' });
+    });
+  }
+
+  /**
+   * This method accepts a ZIP project
+   * The project must containa a file called project.json and the medias referenced in it
+   * @param {} zipFile 
+   */
+  importZipProject(zipFile) {
+    const playlist = this;
+
+    if (!playlist.hertzjsProject)
+      this.commit();
+
+
+    // Load the ZIP file using JSZip
+    JSZip.loadAsync(zipFile /* Blob containing the ZIP file */).then(zip => {
+
+
+
+
+      //First we read the project.json file
+      zip.file("project.json").async("blob").then(projectFileBlob => {
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+
+          //We readt the projet object from the file and copy it in the memory
+          let projectJson = event.target.result
+          let projectObject = JSON.parse(projectJson)
+
+          playlist.hertzjsProject.history.setHistoryStack(projectObject.history.stack)
+          playlist.hertzjsProject.history.setCooldownState(projectObject.history.cooldownState)
+          playlist.hertzjsProject.history.setCurrentIndex(projectObject.history.currentIndex)
+          playlist.hertzjsProject.history.setCooldown(projectObject.history.cooldown)
+          playlist.hertzjsProject.tracks = projectObject.tracks
+
+
+          // Loop through each file in the ZIP archive
+          const fileLoadingPromises = [];
+          zip.forEach(function (relativePath, zipEntry) {
+            // Check if it's a file (not a directory)
+            if (!zipEntry.dir) {
+              if (zipEntry.name == 'project.json')
+                return
+
+              // Extract the file content as a Blob
+              const fileLoadingPromise = zipEntry.async("blob").then(function (fileBlob) {
+                // Use fileBlob here (for example, create an object URL to display images, or read text content)
+                // console.log("File Name: " + zipEntry.name);
+
+                //If the file is a temporary blob file, we simply generate a url for it and update the project
+                //to reference the new temporary url
+                if (zipEntry.name.substring(0, 5) == 'blob.') {
+                  let newUrl = URL.createObjectURL(fileBlob)
+
+                  playlist.hertzjsProject.tracks.forEach(track => {
+                    track.clips.forEach(clip => {
+                      // console.log('checking clip', clip.path)
+
+                      let clipFileName = clip.path.split('/').pop()
+
+                      if (clipFileName == zipEntry.name.substring(5)) {
+                        clip.path = newUrl
+                        // console.log('updating clip', clip.path, 'to', newUrl)
+                      }
+
+                    })
+                  })
+                  //TODO: find all the references in the in all the history versions as well and update them
+                }
+
+              });
+              fileLoadingPromises.push(fileLoadingPromise);
+            }
+          });
+
+          Promise.all(fileLoadingPromises).then(() => {
+
+            // console.log('copying from hertzjs')
+            playlist.copyFromHertzjs(playlist.hertzjsProject);
+
+          })
+
+
+
+        };
+        reader.readAsText(projectFileBlob);
+      })
+
+        .catch(function (error) {
+          console.error("Could not import the project, make sure it contains a history.json file:");
+        });
+
+
+    });
+
+  }
 }
+
+

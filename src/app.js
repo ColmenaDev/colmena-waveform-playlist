@@ -165,6 +165,44 @@ export function init(options = {}, ee = EventEmitter()) {
     playlist.copyFromHertzjs(playlist.getHertjzProjectInstance());
   })
 
+  $('#hertjzjs-export').click(() => {
+    playlist.exportZipProject().then(blob => {
+      window.exportedFile = blob;
+      // Create a download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = 'example.zip'; // Set the file name
+
+      // Append the download link to the body
+      document.body.appendChild(downloadLink);
+
+      // Trigger the download
+      downloadLink.click();
+
+      // Remove the download link from the DOM
+      document.body.removeChild(downloadLink);
+    });
+  })
+
+  // $('#hertjzjs-import').click(() => {
+  //   playlist.importZipProject(window.exportedFile);
+  // })
+
+  const projectInputFile = document.getElementById('hertzjs-project-file');
+  projectInputFile.addEventListener('change', function (event) {
+    const selectedFile = event.target.files[0]; // Get the selected file
+    if (selectedFile) {
+
+      console.log('reading file', selectedFile)
+      window.selectedFile = selectedFile
+
+      playlist.importZipProject(event.target.files[0]);
+    } else {
+      console.log('No file selected');
+    }
+  });
+
+
 
   return playlist;
 }
