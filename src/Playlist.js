@@ -19,6 +19,8 @@ import ExportWavWorkerFunction from "./utils/exportWavWorker";
 import RecorderWorkerFunction from "./utils/recorderWorker";
 import AudioProject from "hertzjs";
 
+import AudioBufferToWav from 'audiobuffer-to-wav'
+
 export default class {
   constructor() {
     this.tracks = [];
@@ -1301,6 +1303,20 @@ export default class {
       }
       else if (typeof track.src === 'string' || track.src instanceof String) {
         hertzjsClip = hertzjsTrack.newClip(track.src);
+      }
+      else if (typeof (track) == 'object' && !!track.buffer) {
+        //This is an audio buffer, so we create a temporary file from it
+        const audioBuffer = track.buffer;
+        const wavBuffer = AudioBufferToWav(audioBuffer);
+        const blob = new window.Blob([new DataView(wavBuffer)], {
+          type: 'audio/wav'
+        })
+        var url = window.URL.createObjectURL(blob)
+
+        hertzjsClip = hertzjsTrack.newClip(url);
+
+
+
       }
       hertzjsClip.setStartsAt(track.startTime)
       hertzjsClip.setDuration(track.cueOut)

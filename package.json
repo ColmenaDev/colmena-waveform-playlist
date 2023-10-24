@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.2",
+    "audiobuffer-to-wav": "^1.0.0",
     "event-emitter": "^0.3.4",
     "fade-curves": "^1.0.2",
     "fade-maker": "^1.0.3",
