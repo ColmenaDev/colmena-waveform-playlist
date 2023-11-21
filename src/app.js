@@ -95,7 +95,7 @@ export function init(options = {}, ee = EventEmitter()) {
   config.container.appendChild(rootNode);
   playlist.tree = tree;
   playlist.rootNode = rootNode;
-  $('#hertjzjs-load-editor').click(() => {
+  document.getElementById('hertjzjs-load-editor').onclick = () => {
     playlist.loadFromJson(`{
           "cursor":0,
           "tracks":[
@@ -143,29 +143,29 @@ export function init(options = {}, ee = EventEmitter()) {
           ]
       }
     `);
-  })
+  }
 
-  $('#hertjzjs-commit').click(() => {
+  document.getElementById('hertjzjs-commit').onclick = () => {
     playlist.commit();
-  })
+  }
 
-  $('#hertjzjs-undo').click(() => {
+  document.getElementById('hertjzjs-undo').onclick = () => {
     playlist.undo()
-  })
+  }
 
-  $('#hertjzjs-redo').click(() => {
+  document.getElementById('hertjzjs-redo').onclick = () => {
     playlist.redo()
-  })
+  }
 
-  $('#hertjzjs-show-json').click(() => {
+  document.getElementById('hertjzjs-show-json').onclick = () => {
     console.log(playlist.getHertjzProjectInstance().toJson())
-  })
+  }
 
-  $('#hertjzjs-copy-from').click(() => {
+  document.getElementById('hertjzjs-copy-from').onclick = () => {
     playlist.copyFromHertzjs(playlist.getHertjzProjectInstance());
-  })
+  }
 
-  $('#hertjzjs-export').click(() => {
+  document.getElementById('hertjzjs-export').onclick = () => {
     playlist.exportZipProject().then(blob => {
       window.exportedFile = blob;
       // Create a download link
@@ -182,11 +182,11 @@ export function init(options = {}, ee = EventEmitter()) {
       // Remove the download link from the DOM
       document.body.removeChild(downloadLink);
     });
-  })
+  }
 
-  // $('#hertjzjs-import').click(() => {
-  //   playlist.importZipProject(window.exportedFile);
-  // })
+  document.getElementById('hertjzjs-import').onclick = () => {
+    playlist.importZipProject(window.exportedFile);
+  }
 
   const projectInputFile = document.getElementById('hertzjs-project-file');
   projectInputFile.addEventListener('change', function (event) {
