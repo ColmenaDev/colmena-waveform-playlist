@@ -3,7 +3,7 @@ import Script from "next/script";
 import EventEmitter from "events";
 import WaveformPlaylist from "colmena-waveform-playlist";
 import { saveAs } from "file-saver";
-import { initAudioExporter } from "../lib/export";
+// import { initAudioExporter } from "../lib/export";
 
 export default function Home() {
   const [ee] = useState(new EventEmitter());
@@ -50,13 +50,13 @@ export default function Home() {
           } else if (type === "buffer") {
             console.log(type, data);
           } else {
-            await initAudioExporter(data, type);
+            // await initAudioExporter(data, type);
           }
         });
 
         playlist.load([
           {
-            src: "audio_wav.wav",
+            src: "hello.mp3",
             name: "Hello",
             // effects: function (graphEnd, masterGainNode, isOffline) {
             //   const reverb = new Tone.Reverb(1.2);
