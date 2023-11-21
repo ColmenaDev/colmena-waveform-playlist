@@ -95,112 +95,112 @@ export function init(options = {}, ee = EventEmitter()) {
   config.container.appendChild(rootNode);
   playlist.tree = tree;
   playlist.rootNode = rootNode;
-  document.getElementById('hertjzjs-load-editor').onclick = () => {
-    playlist.loadFromJson(`{
-          "cursor":0,
-          "tracks":[
-              {
-                  "clips":[
-                  
-                      {
-                          "path":"/waveform-playlist/media/audio/Sound1.mp3",
-                          "startsAt":0,
-                          "offset":0,
-                          "duration":6,
-                          "effects":[
-                              {
-                                  "name" : "fade-in",
-                                  "params":{
-                                      "duration" : 4
-                                  }
-                              }
-                              
-                          ]
-                      }
-                  ]
-              },
-              {
-                "clips":[
-                
-                    {
-                        "path":"/waveform-playlist/media/audio/Sound1.mp3",
-                        "startsAt":6,
-                        "offset":0,
-                        "duration":6,
-                        "effects":[
-                            {
-                                "name" : "fade-out",
-                                "params":{
-                                    "duration" : 4
-                                }
-                            }
-                            
-                        ]
-                    }
-                ]
-            }
-              
-          ]
-      }
-    `);
-  }
+  // document.getElementById('hertjzjs-load-editor').onclick = () => {
+  //   playlist.loadFromJson(`{
+  //         "cursor":0,
+  //         "tracks":[
+  //             {
+  //                 "clips":[
 
-  document.getElementById('hertjzjs-commit').onclick = () => {
-    playlist.commit();
-  }
+  //                     {
+  //                         "path":"/waveform-playlist/media/audio/Sound1.mp3",
+  //                         "startsAt":0,
+  //                         "offset":0,
+  //                         "duration":6,
+  //                         "effects":[
+  //                             {
+  //                                 "name" : "fade-in",
+  //                                 "params":{
+  //                                     "duration" : 4
+  //                                 }
+  //                             }
 
-  document.getElementById('hertjzjs-undo').onclick = () => {
-    playlist.undo()
-  }
+  //                         ]
+  //                     }
+  //                 ]
+  //             },
+  //             {
+  //               "clips":[
 
-  document.getElementById('hertjzjs-redo').onclick = () => {
-    playlist.redo()
-  }
+  //                   {
+  //                       "path":"/waveform-playlist/media/audio/Sound1.mp3",
+  //                       "startsAt":6,
+  //                       "offset":0,
+  //                       "duration":6,
+  //                       "effects":[
+  //                           {
+  //                               "name" : "fade-out",
+  //                               "params":{
+  //                                   "duration" : 4
+  //                               }
+  //                           }
 
-  document.getElementById('hertjzjs-show-json').onclick = () => {
-    console.log(playlist.getHertjzProjectInstance().toJson())
-  }
+  //                       ]
+  //                   }
+  //               ]
+  //           }
 
-  document.getElementById('hertjzjs-copy-from').onclick = () => {
-    playlist.copyFromHertzjs(playlist.getHertjzProjectInstance());
-  }
+  //         ]
+  //     }
+  //   `);
+  // }
 
-  document.getElementById('hertjzjs-export').onclick = () => {
-    playlist.exportZipProject().then(blob => {
-      window.exportedFile = blob;
-      // Create a download link
-      const downloadLink = document.createElement('a');
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = 'example.zip'; // Set the file name
+  // document.getElementById('hertjzjs-commit').onclick = () => {
+  //   playlist.commit();
+  // }
 
-      // Append the download link to the body
-      document.body.appendChild(downloadLink);
+  // document.getElementById('hertjzjs-undo').onclick = () => {
+  //   playlist.undo()
+  // }
 
-      // Trigger the download
-      downloadLink.click();
+  // document.getElementById('hertjzjs-redo').onclick = () => {
+  //   playlist.redo()
+  // }
 
-      // Remove the download link from the DOM
-      document.body.removeChild(downloadLink);
-    });
-  }
+  // document.getElementById('hertjzjs-show-json').onclick = () => {
+  //   console.log(playlist.getHertjzProjectInstance().toJson())
+  // }
 
-  document.getElementById('hertjzjs-import').onclick = () => {
-    playlist.importZipProject(window.exportedFile);
-  }
+  // document.getElementById('hertjzjs-copy-from').onclick = () => {
+  //   playlist.copyFromHertzjs(playlist.getHertjzProjectInstance());
+  // }
 
-  const projectInputFile = document.getElementById('hertzjs-project-file');
-  projectInputFile.addEventListener('change', function (event) {
-    const selectedFile = event.target.files[0]; // Get the selected file
-    if (selectedFile) {
+  // document.getElementById('hertjzjs-export').onclick = () => {
+  //   playlist.exportZipProject().then(blob => {
+  //     window.exportedFile = blob;
+  //     // Create a download link
+  //     const downloadLink = document.createElement('a');
+  //     downloadLink.href = URL.createObjectURL(blob);
+  //     downloadLink.download = 'example.zip'; // Set the file name
 
-      console.log('reading file', selectedFile)
-      window.selectedFile = selectedFile
+  //     // Append the download link to the body
+  //     document.body.appendChild(downloadLink);
 
-      playlist.importZipProject(event.target.files[0]);
-    } else {
-      console.log('No file selected');
-    }
-  });
+  //     // Trigger the download
+  //     downloadLink.click();
+
+  //     // Remove the download link from the DOM
+  //     document.body.removeChild(downloadLink);
+  //   });
+  // }
+
+  // document.getElementById('hertjzjs-import').onclick = () => {
+  //   playlist.importZipProject(window.exportedFile);
+  // }
+
+  // const projectInputFile = document.getElementById('hertzjs-project-file');
+  // projectInputFile.addEventListener('change', function (event) {
+  //   const selectedFile = event.target.files[0]; // Get the selected file
+  //   if (selectedFile) {
+
+  //     console.log('reading file', selectedFile)
+  //     window.selectedFile = selectedFile
+
+  //     playlist.importZipProject(event.target.files[0]);
+  //   } else {
+  //     console.log('No file selected');
+  //   }
+  // });
 
 
 
