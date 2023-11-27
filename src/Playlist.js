@@ -1250,7 +1250,7 @@ export default class {
         console.log('NIDHAL-LOG:syncWithHertjs-1', hertjzClip.path)
         const track = {
           src: hertjzClip.path,
-          name: hertjzClip.path.match(/\/([^/]+)$/)[1],
+          name: hertjzClip.path.includes('/') ? hertjzClip.path.match(/\/([^/]+)$/)[1] : hertjzClip.path,
           start: hertjzClip.startsAt,
           cuein: hertjzClip.offset,
           cueout: hertjzClip.duration
