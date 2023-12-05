@@ -1010,18 +1010,27 @@ export default class {
   record() {
     const playoutPromises = [];
     const start = this.cursor;
-    this.mediaRecorder.start(300);
 
-    this.tracks.forEach((track) => {
-      track.setState("none");
-      playoutPromises.push(
-        track.schedulePlay(this.ac.currentTime, start, undefined, {
-          shouldPlay: this.shouldTrackPlay(track),
-        })
-      );
-    });
+    if (!this.isPlaying() && this.mediaRecorder && this.mediaRecorder.state === "paused") {
+        // console.log("media recorder resume\n");
+        this.mediaRecorder.resume();
+    }
 
-    this.playoutPromises = playoutPromises;
+    if (!this.isPlaying() && this.mediaRecorder && this.mediaRecorder.state !== "recording" && this.mediaRecorder.state !== "paused") {
+
+      this.mediaRecorder.start(300);
+
+      this.tracks.forEach((track) => {
+          track.setState("none");
+          playoutPromises.push(
+              track.schedulePlay(this.ac.currentTime, start, undefined, {
+                  shouldPlay: this.shouldTrackPlay(track),
+              })
+          );
+      });
+
+      this.playoutPromises = playoutPromises;
+    }
   }
 
   startAnimation(startTime) {
