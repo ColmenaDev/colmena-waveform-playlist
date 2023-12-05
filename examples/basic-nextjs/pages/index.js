@@ -11,7 +11,6 @@ export default function Home() {
   const container = useCallback(
     (node) => {
       async function logError(err) {
-        console.log("chegando aqui então né ")  
         console.error(err);
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,15 +100,26 @@ export default function Home() {
   );
 
   function handleRedo(){
-    playlist.redo();
+    // playlist.redo();
+    ee.emit("redo");
   }
 
   function handleUndo(){
-    playlist.undo();
+    // playlist.undo();
+    ee.emit("undo");
   }
 
   function handleCommitChanges(){
-    playlist.commit();
+    // playlist.commit();
+    ee.emit("commit");
+  }
+
+  function handleExportZipProject(){
+    ee.emit("exportZipProject");
+  }
+
+  function handleImportZipProject(){
+    ee.emit("importZipProject");
   }
 
   const playoutEvents = ['pause', 'play', 'stop', 'rewind', 'fastforward', 'record', 'clear'];
@@ -194,14 +204,10 @@ export default function Home() {
           }}>
             show json
           </button>
-          <button style={{ backgroundColor: "palegreen" }} onClick={() => { 
-            // copy from hertzjs event
-          }}>
-            copy from hertzjs
+          <button style={{ backgroundColor: "palegreen" }} onClick={handleImportZipProject}>
+            import project
           </button>
-          <button style={{ backgroundColor: "palegreen" }} onClick={() => { 
-            // export project
-          }}>
+          <button style={{ backgroundColor: "palegreen" }} onClick={handleExportZipProject}>
             export project
           </button>
         </Wrapper>
