@@ -948,7 +948,7 @@ export default class {
   }
 
   stop() {
-    if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
+    if (this.mediaRecorder && (this.mediaRecorder.state === "recording" || this.mediaRecorder.state === "paused")) {
       this.mediaRecorder.stop();
     }
 
