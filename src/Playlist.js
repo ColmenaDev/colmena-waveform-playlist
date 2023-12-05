@@ -438,6 +438,26 @@ export default class {
       // console.log(this.tracks)
       console.log(this.hertzjsProject)
     })
+
+    ee.on('commit', () => {
+      this.commit();
+    })
+
+    ee.on('undo', () => {
+      this.undo();
+    })
+
+    ee.on('redo', () => {
+      this.redo();
+    })
+
+    ee.on('importZipProject', (zipFile) => {
+      this.importZipProject(zipFile)
+    })
+
+    ee.on('exportZipProject', () => {
+      return this.exportZipProject();
+    })
   }
 
   load(trackList) {
