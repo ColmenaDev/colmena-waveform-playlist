@@ -456,7 +456,9 @@ export default class {
     })
 
     ee.on('exportZipProject', () => {
-      return this.exportZipProject();
+      this.exportZipProject().then((blob) => {
+        this.ee.emit("zipProjectExported", blob);
+      })
     })
   }
 
@@ -1032,8 +1034,8 @@ export default class {
     const start = this.cursor;
 
     if (!this.isPlaying() && this.mediaRecorder && this.mediaRecorder.state === "paused") {
-        // console.log("media recorder resume\n");
-        this.mediaRecorder.resume();
+      // console.log("media recorder resume\n");
+      this.mediaRecorder.resume();
     }
 
     if (!this.isPlaying() && this.mediaRecorder && this.mediaRecorder.state !== "recording" && this.mediaRecorder.state !== "paused") {
@@ -1041,12 +1043,12 @@ export default class {
       this.mediaRecorder.start(300);
 
       this.tracks.forEach((track) => {
-          track.setState("none");
-          playoutPromises.push(
-              track.schedulePlay(this.ac.currentTime, start, undefined, {
-                  shouldPlay: this.shouldTrackPlay(track),
-              })
-          );
+        track.setState("none");
+        playoutPromises.push(
+          track.schedulePlay(this.ac.currentTime, start, undefined, {
+            shouldPlay: this.shouldTrackPlay(track),
+          })
+        );
       });
 
       this.playoutPromises = playoutPromises;
