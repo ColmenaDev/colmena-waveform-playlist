@@ -23,10 +23,7 @@ export function init(options = {}, ee = EventEmitter()) {
         volume: true,
         stereoPan: true,
         collapse: true,
-        remove: true,
-        // The template property allows you to change the type of visualization of a playlist's control panel. 
-        // Two values are possible: default and lean
-        template: 'default' 
+        remove: true, 
       },
     },
     colors: {

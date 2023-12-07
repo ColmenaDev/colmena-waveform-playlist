@@ -33,7 +33,7 @@ export default function Home() {
           {
             samplesPerPixel: 500,
             mono: true,
-            waveHeight: 135,
+            waveHeight: 140,
             sampleRate: 48000,
             container: node,
             timescale: true,
@@ -44,7 +44,7 @@ export default function Home() {
             innerWidth: 200,
             controls: {
               show: true,
-              width: 150,
+              width: 80,
               widgets: {
                 muterOrSolo: true,
                 volume: true,
