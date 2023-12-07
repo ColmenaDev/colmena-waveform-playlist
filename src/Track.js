@@ -609,7 +609,9 @@ export default class {
     const isCollapsed = data.collapsed;
     const numChan = this.peaks.data.length;
     const widgets = data.controls.widgets;
-
+    const template = widgets.template;
+    const isLeanTemplate = template === "lean";
+    
     const removeTrack = h(
       "button.btn.btn-danger.btn-xs.track-remove",
       {
@@ -647,17 +649,22 @@ export default class {
     if (widgets.remove) {
       headerChildren.push(removeTrack);
     }
-    headerChildren.push(trackName);
+    
+    if (!isLeanTemplate) headerChildren.push(trackName);
+
     if (widgets.collapse) {
       headerChildren.push(collapseTrack);
     }
 
-    const controls = [h("div.track-header", headerChildren)];
+    const trackHeaderControls = [h(`div.track-header${isLeanTemplate ? '.track-header-lean' : ''}`, headerChildren)];
 
+    const muteOrSoloControls = [];
+    const volumeControls = [];
+    const stereoPanControls = [];
     if (!isCollapsed) {
       if (widgets.muteOrSolo) {
-        controls.push(
-          h("div.btn-group", [
+        muteOrSoloControls.push(
+          h(`div.${isLeanTemplate ? 'btn-group-lean' : 'btn-group'}`, [
             h(
               `button.btn.btn-outline-dark.btn-xs.btn-mute${muteClass}`,
               {
@@ -668,7 +675,7 @@ export default class {
                   this.ee.emit("mute", this);
                 },
               },
-              ["Mute"]
+              isLeanTemplate ? ["M"] : ["Mute"]
             ),
             h(
               `button.btn.btn-outline-dark.btn-xs.btn-solo${soloClass}`,
@@ -677,15 +684,21 @@ export default class {
                   this.ee.emit("solo", this);
                 },
               },
-              ["Solo"]
+              isLeanTemplate ? ["S"] : ["Solo"]
             ),
           ])
         );
       }
-
       if (widgets.volume) {
-        controls.push(
-          h("label.volume", [
+        let leanVolumeControls = h('div.volume-controls');
+        if (isLeanTemplate){
+          leanVolumeControls = h('div.volume-controls',[
+              h(`i.fas.fa-volume-up`)
+          ])
+        }
+        volumeControls.push(
+          h(`label.${isLeanTemplate ? 'volume-lean' : 'volume'}`, [
+            leanVolumeControls,
             h("input.volume-slider", {
               attributes: {
                 "aria-label": "Track volume control",
@@ -702,10 +715,17 @@ export default class {
           ])
         );
       }
-
       if (widgets.stereoPan) {
-        controls.push(
-          h("label.stereopan", [
+        let stereopanControls = h('div.stereopan-controls');
+        if (isLeanTemplate){
+          stereopanControls = h('div.stereopan-controls',[
+              h(`span`, { }, ["L"]),
+              h(`span`, { }, ["R"]),
+          ])
+        }
+        stereoPanControls.push(
+          h(`label.${isLeanTemplate ? 'stereopan-lean' : 'stereopan'}`, [
+            stereopanControls,
             h("input.stereopan-slider", {
               attributes: {
                 "aria-label": "Track stereo pan control",
@@ -723,6 +743,12 @@ export default class {
         );
       }
     }
+
+    let controls = [];
+    if (widgets.template === 'default')
+      controls = [trackHeaderControls, muteOrSoloControls, volumeControls, stereoPanControls];
+    else if (widgets.template === 'lean')
+      controls = [muteOrSoloControls, volumeControls, stereoPanControls, trackHeaderControls];
 
     return h(
       "div.controls",
