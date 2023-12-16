@@ -436,7 +436,7 @@ export default class {
     ee.on('audiosourcesrendered', () => {
       // this.commit();
       // console.log(this.tracks)
-      console.log(this.hertzjsProject)
+      //console.log(this.hertzjsProject)
     })
 
     ee.on('commit', () => {
@@ -1278,7 +1278,7 @@ export default class {
     hertjzProject.tracks.forEach((hertzjsTrack) => {
       hertzjsTrack.clips.forEach(async hertjzClip => {
         //Create a new waveform track
-        console.log('NIDHAL-LOG:syncWithHertjs-1', hertjzClip.path)
+        //console.log('NIDHAL-LOG:syncWithHertjs-1', hertjzClip.path)
         const track = {
           src: hertjzClip.path,
           name: hertjzClip.path.includes('/') ? hertjzClip.path.match(/\/([^/]+)$/)[1] : hertjzClip.path,
@@ -1307,7 +1307,7 @@ export default class {
           }
         })
         this.load([track]);
-        console.log(this.tracks)
+        //console.log(this.tracks)
       })
     })
   }
@@ -1315,7 +1315,7 @@ export default class {
   commit() {
     if (!this.hertzjsProject) {
       this.hertzjsProject = new AudioProject();
-      console.log('Creating a new Hertzjs Instance')
+      //console.log('Creating a new Hertzjs Instance')
     }
 
     window.hjz = this.hertzjsProject;
@@ -1328,7 +1328,7 @@ export default class {
       let hertzjsClip = undefined;
       if (track.src instanceof File) {
         let url = URL.createObjectURL(track.src)
-        console.log('File is not a string, it is a file, creating a blog and a url and referencing it', url)
+        //console.log('File is not a string, it is a file, creating a blog and a url and referencing it', url)
         hertzjsClip = hertzjsTrack.newClip(url);
 
       }
@@ -1372,7 +1372,7 @@ export default class {
     let isInLastVersion = this.hertzjsProject.isInLastVersion();
     if (isInLastVersion)
       return false;
-    console.log('currently in the', this.hertzjsProject.history.currentIndex, 'version', isInLastVersion ? ' LAST VERSION' : '')
+    //console.log('currently in the', this.hertzjsProject.history.currentIndex, 'version', isInLastVersion ? ' LAST VERSION' : '')
     this.hertzjsProject.redo();
     this.copyFromHertzjs(this.hertzjsProject)
   }
@@ -1395,13 +1395,13 @@ export default class {
     //Now we'll be saving all the media files for the current version
     this.hertzjsProject.tracks.forEach(track => {
       track.clips.forEach(clip => {
-        console.log('Processing clip', clip)
+        //console.log('Processing clip', clip)
         if (clip.path.indexOf("blob:") >= 0) {
 
-          console.log('adding the file', clip.path)
+          //console.log('adding the file', clip.path)
 
           const fetchPromise = fetch(clip.path).then(resp => resp.blob()).then(data => {
-            console.log('adding file to zip', data)
+            //console.log('adding file to zip', data)
 
             let fileName = clip.path.split('/').pop()
             zip.file('blob.' + fileName, data)

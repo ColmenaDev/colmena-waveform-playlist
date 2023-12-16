@@ -75,6 +75,10 @@ export default function Home() {
           // setUpChain.current = a;
         });
 
+        ee.on("zipProjectExported", function (blob) {
+          saveAs(blob, "test.zip");
+        });
+
         ee.on("audiorenderingfinished", function (type, data) {
           //restore original ctx for further use.
           if (type === "wav") {
