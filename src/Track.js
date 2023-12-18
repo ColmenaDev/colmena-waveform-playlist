@@ -35,6 +35,11 @@ export default class {
     this.startTime = 0;
     this.endTime = 0;
     this.stereoPan = 0;
+    this.hertzjsTrack = undefined;
+  }
+
+  setHertzjsTrack(hertjzTrack) {
+    this.hertzjsTrack = hertjzTrack;
   }
 
   setEventEmitter(ee) {
@@ -209,7 +214,7 @@ export default class {
     let buffer_duration = (this.buffer.length * 2) / (this.buffer.sampleRate * this.buffer.numberOfChannels);
 
     let timeSplitOffset = start - this.getStartTime() + this.cueIn;
-    console.log("timeSplitOffset: "+timeSplitOffset);
+    console.log("timeSplitOffset: " + timeSplitOffset);
 
     if (timeSplitOffset < 0) {
       // outside interval left
@@ -604,7 +609,7 @@ export default class {
     const isCollapsed = data.collapsed;
     const numChan = this.peaks.data.length;
     const widgets = data.controls.widgets;
-
+    
     const removeTrack = h(
       "button.btn.btn-danger.btn-xs.track-remove",
       {
@@ -619,7 +624,7 @@ export default class {
       [h("i.fas.fa-times")]
     );
 
-    const trackName = h("span", [this.name]);
+    // const trackName = h("span", [this.name]);
 
     const collapseTrack = h(
       "button.btn.btn-info.btn-xs.track-collapse",
@@ -642,17 +647,22 @@ export default class {
     if (widgets.remove) {
       headerChildren.push(removeTrack);
     }
-    headerChildren.push(trackName);
+    
+    // if (!isLeanTemplate) headerChildren.push(trackName);
+
     if (widgets.collapse) {
       headerChildren.push(collapseTrack);
     }
 
-    const controls = [h("div.track-header", headerChildren)];
+    const trackHeaderControls = [h(`div.track-header.track-header-lean`, headerChildren)];
 
+    const muteOrSoloControls = [];
+    const volumeControls = [];
+    const stereoPanControls = [];
     if (!isCollapsed) {
       if (widgets.muteOrSolo) {
-        controls.push(
-          h("div.btn-group", [
+        muteOrSoloControls.push(
+          h(`div.btn-group-lean`, [
             h(
               `button.btn.btn-outline-dark.btn-xs.btn-mute${muteClass}`,
               {
@@ -663,7 +673,7 @@ export default class {
                   this.ee.emit("mute", this);
                 },
               },
-              ["Mute"]
+              ["M"]
             ),
             h(
               `button.btn.btn-outline-dark.btn-xs.btn-solo${soloClass}`,
@@ -672,15 +682,17 @@ export default class {
                   this.ee.emit("solo", this);
                 },
               },
-              ["Solo"]
+              ["S"]
             ),
           ])
         );
       }
-
       if (widgets.volume) {
-        controls.push(
-          h("label.volume", [
+        volumeControls.push(
+          h(`label.volume-lean`, [
+            h('div.volume-controls',[
+              h(`i.fas.fa-volume-up`)
+          ]),
             h("input.volume-slider", {
               attributes: {
                 "aria-label": "Track volume control",
@@ -697,10 +709,13 @@ export default class {
           ])
         );
       }
-
       if (widgets.stereoPan) {
-        controls.push(
-          h("label.stereopan", [
+        stereoPanControls.push(
+          h(`label.stereopan-lean`, [
+            h('div.stereopan-controls',[
+              h(`span`, { }, ["L"]),
+              h(`span`, { }, ["R"]),
+          ]),
             h("input.stereopan-slider", {
               attributes: {
                 "aria-label": "Track stereo pan control",
@@ -719,13 +734,14 @@ export default class {
       }
     }
 
+    const controls = [muteOrSoloControls, volumeControls, stereoPanControls, trackHeaderControls];
+
     return h(
       "div.controls",
       {
         attributes: {
-          style: `height: ${numChan * data.height}px; width: ${
-            data.controls.width
-          }px; position: absolute; left: 0; z-index: 10;`,
+          style: `height: ${numChan * data.height}px; width: ${data.controls.width
+            }px; position: absolute; left: 0; z-index: 10;`,
         },
       },
       controls
@@ -884,9 +900,8 @@ export default class {
         `div.channel.channel-${channelNum}`,
         {
           attributes: {
-            style: `height: ${data.height}px; width: ${width}px; top: ${
-              channelNum * data.height
-            }px; left: ${startX}px; position: absolute; margin: 0; padding: 0; z-index: 1;`,
+            style: `height: ${data.height}px; width: ${width}px; top: ${channelNum * data.height
+              }px; left: ${startX}px; position: absolute; margin: 0; padding: 0; z-index: 1;`,
           },
         },
         channelChildren
@@ -948,9 +963,8 @@ export default class {
       `div.channel-wrapper${audibleClass}${customClass}`,
       {
         attributes: {
-          style: `margin-left: ${channelMargin}px; height: ${
-            data.height * numChan
-          }px;`,
+          style: `margin-left: ${channelMargin}px; height: ${data.height * numChan
+            }px;`,
         },
       },
       channelChildren

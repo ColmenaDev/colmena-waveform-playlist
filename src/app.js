@@ -2,6 +2,7 @@ import _defaults from "lodash.defaultsdeep";
 import createElement from "virtual-dom/create-element";
 import EventEmitter from "event-emitter";
 import Playlist from "./Playlist";
+import AudioProject from "hertzjs";
 
 export function init(options = {}, ee = EventEmitter()) {
   if (options.container === undefined) {
@@ -22,7 +23,7 @@ export function init(options = {}, ee = EventEmitter()) {
         volume: true,
         stereoPan: true,
         collapse: true,
-        remove: true,
+        remove: true, 
       },
     },
     colors: {
@@ -94,6 +95,114 @@ export function init(options = {}, ee = EventEmitter()) {
   config.container.appendChild(rootNode);
   playlist.tree = tree;
   playlist.rootNode = rootNode;
+  // document.getElementById('hertjzjs-load-editor').onclick = () => {
+  //   playlist.loadFromJson(`{
+  //         "cursor":0,
+  //         "tracks":[
+  //             {
+  //                 "clips":[
+
+  //                     {
+  //                         "path":"/waveform-playlist/media/audio/Sound1.mp3",
+  //                         "startsAt":0,
+  //                         "offset":0,
+  //                         "duration":6,
+  //                         "effects":[
+  //                             {
+  //                                 "name" : "fade-in",
+  //                                 "params":{
+  //                                     "duration" : 4
+  //                                 }
+  //                             }
+
+  //                         ]
+  //                     }
+  //                 ]
+  //             },
+  //             {
+  //               "clips":[
+
+  //                   {
+  //                       "path":"/waveform-playlist/media/audio/Sound1.mp3",
+  //                       "startsAt":6,
+  //                       "offset":0,
+  //                       "duration":6,
+  //                       "effects":[
+  //                           {
+  //                               "name" : "fade-out",
+  //                               "params":{
+  //                                   "duration" : 4
+  //                               }
+  //                           }
+
+  //                       ]
+  //                   }
+  //               ]
+  //           }
+
+  //         ]
+  //     }
+  //   `);
+  // }
+
+  // document.getElementById('hertjzjs-commit').onclick = () => {
+  //   playlist.commit();
+  // }
+
+  // document.getElementById('hertjzjs-undo').onclick = () => {
+  //   playlist.undo()
+  // }
+
+  // document.getElementById('hertjzjs-redo').onclick = () => {
+  //   playlist.redo()
+  // }
+
+  // document.getElementById('hertjzjs-show-json').onclick = () => {
+  //   console.log(playlist.getHertjzProjectInstance().toJson())
+  // }
+
+  // document.getElementById('hertjzjs-copy-from').onclick = () => {
+  //   playlist.copyFromHertzjs(playlist.getHertjzProjectInstance());
+  // }
+
+  // document.getElementById('hertjzjs-export').onclick = () => {
+  //   playlist.exportZipProject().then(blob => {
+  //     window.exportedFile = blob;
+  //     // Create a download link
+  //     const downloadLink = document.createElement('a');
+  //     downloadLink.href = URL.createObjectURL(blob);
+  //     downloadLink.download = 'example.zip'; // Set the file name
+
+  //     // Append the download link to the body
+  //     document.body.appendChild(downloadLink);
+
+  //     // Trigger the download
+  //     downloadLink.click();
+
+  //     // Remove the download link from the DOM
+  //     document.body.removeChild(downloadLink);
+  //   });
+  // }
+
+  // document.getElementById('hertjzjs-import').onclick = () => {
+  //   playlist.importZipProject(window.exportedFile);
+  // }
+
+  // const projectInputFile = document.getElementById('hertzjs-project-file');
+  // projectInputFile.addEventListener('change', function (event) {
+  //   const selectedFile = event.target.files[0]; // Get the selected file
+  //   if (selectedFile) {
+
+  //     console.log('reading file', selectedFile)
+  //     window.selectedFile = selectedFile
+
+  //     playlist.importZipProject(event.target.files[0]);
+  //   } else {
+  //     console.log('No file selected');
+  //   }
+  // });
+
+
 
   return playlist;
 }

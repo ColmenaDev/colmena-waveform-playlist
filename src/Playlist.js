@@ -4,6 +4,9 @@ import diff from "virtual-dom/diff";
 import patch from "virtual-dom/patch";
 import InlineWorker from "inline-worker";
 
+import JSZip from 'jszip';
+
+
 import { pixelsToSeconds } from "./utils/conversions";
 import { resampleAudioBuffer } from "./utils/audioData";
 import LoaderFactory from "./track/loader/LoaderFactory";
@@ -14,6 +17,9 @@ import Playout from "./Playout";
 import AnnotationList from "./annotation/AnnotationList";
 import ExportWavWorkerFunction from "./utils/exportWavWorker";
 import RecorderWorkerFunction from "./utils/recorderWorker";
+import AudioProject from "hertzjs";
+
+import AudioBufferToWav from 'audiobuffer-to-wav'
 
 export default class {
   constructor() {
@@ -38,6 +44,16 @@ export default class {
     this.durationFormat = "hh:mm:ss.uuu";
     this.isAutomaticScroll = false;
     this.resetDrawTimer = undefined;
+
+    // Hertjz stuff
+    this.hertzjsProject = undefined;
+    this.hertjsMapper = new Map();
+
+
+  }
+
+  setHertzjsProject(hertzjsProject) {
+    this.hertzjsProject = hertzjsProject;
   }
 
   // TODO extract into a plugin
@@ -411,6 +427,39 @@ export default class {
         this.isScrolling = false;
       }, 200);
     });
+
+    ee.on('hertjz-loaded', (hertjzProject) => {
+      this.hertzjsProject = hertjzProject;
+      this.copyFromHertzjs(hertjzProject);
+    })
+
+    ee.on('audiosourcesrendered', () => {
+      // this.commit();
+      // console.log(this.tracks)
+      //console.log(this.hertzjsProject)
+    })
+
+    ee.on('commit', () => {
+      this.commit();
+    })
+
+    ee.on('undo', () => {
+      this.undo();
+    })
+
+    ee.on('redo', () => {
+      this.redo();
+    })
+
+    ee.on('importZipProject', (zipFile) => {
+      this.importZipProject(zipFile)
+    })
+
+    ee.on('exportZipProject', () => {
+      this.exportZipProject().then((blob) => {
+        this.ee.emit("zipProjectExported", blob);
+      })
+    })
   }
 
   load(trackList) {
@@ -896,36 +945,32 @@ export default class {
   }
 
   pause() {
-      // console.log("pause\n");
+    // console.log("pause\n");
 
-      if (!this.isPlaying() && this.mediaRecorder)
-      {
-	  if (this.mediaRecorder.state === "recording")
-	  {
-	      // console.log("media recorder pause\n");
-              this.mediaRecorder.pause();
-              this.pausedAt = this.getCurrentTime();
-	      return this.playbackReset();
-	  }
-
-	  if (this.mediaRecorder.state === "paused")
-	  {
-	      // console.log("media recorder resume\n");
-              this.mediaRecorder.resume();
-	      return this.playbackReset();
-	  }
-          return Promise.all(this.playoutPromises);
+    if (!this.isPlaying() && this.mediaRecorder) {
+      if (this.mediaRecorder.state === "recording") {
+        // console.log("media recorder pause\n");
+        this.mediaRecorder.pause();
+        this.pausedAt = this.getCurrentTime();
+        return this.playbackReset();
       }
 
-      if (this.isPlaying())
-      {
-          this.pausedAt = this.getCurrentTime();
-          return this.playbackReset();
+      if (this.mediaRecorder.state === "paused") {
+        // console.log("media recorder resume\n");
+        this.mediaRecorder.resume();
+        return this.playbackReset();
       }
+      return Promise.all(this.playoutPromises);
+    }
+
+    if (this.isPlaying()) {
+      this.pausedAt = this.getCurrentTime();
+      return this.playbackReset();
+    }
   }
 
   stop() {
-    if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
+    if (this.mediaRecorder && (this.mediaRecorder.state === "recording" || this.mediaRecorder.state === "paused")) {
       this.mediaRecorder.stop();
     }
 
@@ -987,18 +1032,27 @@ export default class {
   record() {
     const playoutPromises = [];
     const start = this.cursor;
-    this.mediaRecorder.start(300);
 
-    this.tracks.forEach((track) => {
-      track.setState("none");
-      playoutPromises.push(
-        track.schedulePlay(this.ac.currentTime, start, undefined, {
-          shouldPlay: this.shouldTrackPlay(track),
-        })
-      );
-    });
+    if (!this.isPlaying() && this.mediaRecorder && this.mediaRecorder.state === "paused") {
+      // console.log("media recorder resume\n");
+      this.mediaRecorder.resume();
+    }
 
-    this.playoutPromises = playoutPromises;
+    if (!this.isPlaying() && this.mediaRecorder && this.mediaRecorder.state !== "recording" && this.mediaRecorder.state !== "paused") {
+
+      this.mediaRecorder.start(300);
+
+      this.tracks.forEach((track) => {
+        track.setState("none");
+        playoutPromises.push(
+          track.schedulePlay(this.ac.currentTime, start, undefined, {
+            shouldPlay: this.shouldTrackPlay(track),
+          })
+        );
+      });
+
+      this.playoutPromises = playoutPromises;
+    }
   }
 
   startAnimation(startTime) {
@@ -1209,4 +1263,256 @@ export default class {
       effects: this.effectsGraph,
     };
   }
+
+
+  //----------- HERTZJS --------------
+
+  /**
+   * This method is called by the event listener.
+   * This method syncs the hertzjs project to the current waveform project.
+   * Hertjz supports multiple clips per track, however waveform does not, and for that, each hertzjs clip
+   * will be stored in a separate waveform track.
+   */
+  async copyFromHertzjs(hertjzProject) {
+    this.tracks = []
+    hertjzProject.tracks.forEach((hertzjsTrack) => {
+      hertzjsTrack.clips.forEach(async hertjzClip => {
+        //Create a new waveform track
+        //console.log('NIDHAL-LOG:syncWithHertjs-1', hertjzClip.path)
+        const track = {
+          src: hertjzClip.path,
+          name: hertjzClip.path.includes('/') ? hertjzClip.path.match(/\/([^/]+)$/)[1] : hertjzClip.path,
+          start: hertjzClip.startsAt,
+          cuein: hertjzClip.offset,
+          cueout: hertjzClip.duration
+        }
+        //Add effects
+        hertjzClip.effects.forEach(hertzjsEffect => {
+          switch (hertzjsEffect.name) {
+            case 'fade-in':
+              if (hertzjsEffect.params && hertzjsEffect.params.duration > 0) {
+                track.fadeIn = {
+                  duration: hertzjsEffect.params.duration
+                }
+              }
+              break;
+
+            case 'fade-out':
+              if (hertzjsEffect.params && hertzjsEffect.params.duration > 0) {
+                track.fadeOut = {
+                  duration: hertzjsEffect.params.duration
+                }
+              }
+              break;
+          }
+        })
+        this.load([track]);
+        //console.log(this.tracks)
+      })
+    })
+  }
+
+  commit() {
+    if (!this.hertzjsProject) {
+      this.hertzjsProject = new AudioProject();
+      //console.log('Creating a new Hertzjs Instance')
+    }
+
+    window.hjz = this.hertzjsProject;
+    //Copy all the waveform settings to hertzjs and commits the change
+    //Delete all the tracks in hertzjs in the current version 
+    this.hertzjsProject.tracks = [];
+    this.tracks.forEach(track => {
+      let hertzjsTrack = this.hertzjsProject.newTrack();
+      //TODO: if the files are local, we need to copy them locally
+      let hertzjsClip = undefined;
+      if (track.src instanceof File) {
+        let url = URL.createObjectURL(track.src)
+        //console.log('File is not a string, it is a file, creating a blog and a url and referencing it', url)
+        hertzjsClip = hertzjsTrack.newClip(url);
+
+      }
+      else if (typeof track.src === 'string' || track.src instanceof String) {
+        hertzjsClip = hertzjsTrack.newClip(track.src);
+      }
+      else if (typeof (track) == 'object' && !!track.buffer) {
+        //This is an audio buffer, so we create a temporary file from it
+        const audioBuffer = track.buffer;
+        const wavBuffer = AudioBufferToWav(audioBuffer);
+        const blob = new window.Blob([new DataView(wavBuffer)], {
+          type: 'audio/wav'
+        })
+        var url = window.URL.createObjectURL(blob)
+
+        hertzjsClip = hertzjsTrack.newClip(url);
+
+
+
+      }
+      hertzjsClip.setStartsAt(track.startTime)
+      hertzjsClip.setDuration(track.cueOut)
+      hertzjsClip.setOffset(track.cueIn)
+      //TODO:Add effects here
+    })
+    this.hertzjsProject.commit()
+  }
+
+  undo() {
+    if (!this.hertzjsProject)
+      return false;
+
+    let currentIndex = this.hertzjsProject.history.currentIndex;
+    if (currentIndex <= 1)
+      return false;
+    this.hertzjsProject.undo();
+    this.copyFromHertzjs(this.hertzjsProject)
+  }
+
+  redo() {
+    let isInLastVersion = this.hertzjsProject.isInLastVersion();
+    if (isInLastVersion)
+      return false;
+    //console.log('currently in the', this.hertzjsProject.history.currentIndex, 'version', isInLastVersion ? ' LAST VERSION' : '')
+    this.hertzjsProject.redo();
+    this.copyFromHertzjs(this.hertzjsProject)
+  }
+
+  getHertjzProjectInstance() {
+    return this.hertzjsProject;
+  }
+
+
+  /**
+   * This method will export the project as a zip file
+   */
+  exportZipProject() {
+    const zip = new JSZip();
+    zip.file('project.json', JSON.stringify(this.hertzjsProject));
+    zip.file('README.txt', 'Nothing here!');
+
+    const fetchPromises = [];
+
+    //Now we'll be saving all the media files for the current version
+    this.hertzjsProject.tracks.forEach(track => {
+      track.clips.forEach(clip => {
+        //console.log('Processing clip', clip)
+        if (clip.path.indexOf("blob:") >= 0) {
+
+          //console.log('adding the file', clip.path)
+
+          const fetchPromise = fetch(clip.path).then(resp => resp.blob()).then(data => {
+            //console.log('adding file to zip', data)
+
+            let fileName = clip.path.split('/').pop()
+            zip.file('blob.' + fileName, data)
+
+          });
+          fetchPromises.push(fetchPromise)
+        }
+      })
+    })
+
+    return Promise.all(fetchPromises).then(() => {
+      // Generate the ZIP file after all operations are finished
+      return zip.generateAsync({ type: 'blob' });
+    });
+  }
+
+  /**
+   * This method accepts a ZIP project
+   * The project must containa a file called project.json and the medias referenced in it
+   * @param {} zipFile 
+   */
+  importZipProject(zipFile) {
+    const playlist = this;
+
+    if (!playlist.hertzjsProject)
+      this.commit();
+
+
+    // Load the ZIP file using JSZip
+    JSZip.loadAsync(zipFile /* Blob containing the ZIP file */).then(zip => {
+
+
+
+
+      //First we read the project.json file
+      zip.file("project.json").async("blob").then(projectFileBlob => {
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+
+          //We readt the projet object from the file and copy it in the memory
+          let projectJson = event.target.result
+          let projectObject = JSON.parse(projectJson)
+
+          playlist.hertzjsProject.history.setHistoryStack(projectObject.history.stack)
+          playlist.hertzjsProject.history.setCooldownState(projectObject.history.cooldownState)
+          playlist.hertzjsProject.history.setCurrentIndex(projectObject.history.currentIndex)
+          playlist.hertzjsProject.history.setCooldown(projectObject.history.cooldown)
+          playlist.hertzjsProject.tracks = projectObject.tracks
+
+
+          // Loop through each file in the ZIP archive
+          const fileLoadingPromises = [];
+          zip.forEach(function (relativePath, zipEntry) {
+            // Check if it's a file (not a directory)
+            if (!zipEntry.dir) {
+              if (zipEntry.name == 'project.json')
+                return
+
+              // Extract the file content as a Blob
+              const fileLoadingPromise = zipEntry.async("blob").then(function (fileBlob) {
+                // Use fileBlob here (for example, create an object URL to display images, or read text content)
+                // console.log("File Name: " + zipEntry.name);
+
+                //If the file is a temporary blob file, we simply generate a url for it and update the project
+                //to reference the new temporary url
+                if (zipEntry.name.substring(0, 5) == 'blob.') {
+                  let newUrl = URL.createObjectURL(fileBlob)
+
+                  playlist.hertzjsProject.tracks.forEach(track => {
+                    track.clips.forEach(clip => {
+                      // console.log('checking clip', clip.path)
+
+                      let clipFileName = clip.path.split('/').pop()
+
+                      if (clipFileName == zipEntry.name.substring(5)) {
+                        clip.path = newUrl
+                        // console.log('updating clip', clip.path, 'to', newUrl)
+                      }
+
+                    })
+                  })
+                  //TODO: find all the references in the in all the history versions as well and update them
+                }
+
+              });
+              fileLoadingPromises.push(fileLoadingPromise);
+            }
+          });
+
+          Promise.all(fileLoadingPromises).then(() => {
+
+            // console.log('copying from hertzjs')
+            playlist.copyFromHertzjs(playlist.hertzjsProject);
+
+          })
+
+
+
+        };
+        reader.readAsText(projectFileBlob);
+      })
+
+        .catch(function (error) {
+          console.error("Could not import the project, make sure it contains a history.json file:");
+        });
+
+
+    });
+
+  }
 }
+
+

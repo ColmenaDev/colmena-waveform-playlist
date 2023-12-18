@@ -99,6 +99,7 @@
   line-height: 0.5;
   border-radius: 0.2rem;
 }
+
 .playlist .btn-group {
   margin-bottom: 0.3rem;
 }
@@ -162,9 +163,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.2rem;
+  padding: 0 0.4rem;
   font-size: 0.75rem;
 }
+
 .playlist .controls .track-header button {
   width: 20px;
   height: 20px;
@@ -208,6 +210,7 @@
 .playlist .controls label.stereopan:after {
   content: "R";
 }
+
 .playlist .controls input[type=range] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -391,5 +394,58 @@ a:focus {
 footer {
   margin-top: 2em;
 }
+
+/*
+CSS settings for the Lean template
+*/
+
+.playlist .btn-group-lean {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding: 0px;
+}
+
+.playlist .controls .track-header-lean {
+  padding: 0 0.3rem !important;
+}
+
+.playlist .controls .volume-lean,
+.playlist .controls .stereopan-lean {
+  display: flex;
+  flex-direction: column;
+  margin: 0px;  
+  padding-right: 5px;
+  padding-left: 5px;
+  margin-bottom: 5px;
+}
+
+
+.playlist .controls .volume-lean .volume-controls,
+.playlist .controls .stereopan-lean .stereopan-controls {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0px;
+  margin: 0px;
+}
+
+.playlist .controls .volume-lean .volume-controls {
+  justify-content: flex-end !important;
+}
+
+.playlist .controls .volume-lean input[type=range],
+.playlist .controls .stereopan-lean input[type=range] {
+  margin-top: 10px;
+  width: 100% !important;
+}
+
+/* ---------------------------- */
 
 /*# sourceMappingURL=main.css.map */

@@ -1,7 +1,7 @@
 {
   "name": "colmena-waveform-playlist",
   "description": "Multiple track web audio editor and player with waveform preview",
-  "version": "0.0.31",
+  "version": "0.1.6",
   "main": "build/waveform-playlist.umd.js",
   "author": "Colmena",
   "license": "MIT",
@@ -31,10 +31,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.2",
+    "audiobuffer-to-wav": "^1.0.0",
     "event-emitter": "^0.3.4",
     "fade-curves": "^1.0.2",
     "fade-maker": "^1.0.3",
+    "hertzjs": "^0.0.3",
     "inline-worker": "^1.1.0",
+    "jszip": "^3.10.1",
     "lodash.assign": "^4.0.0",
     "lodash.defaultsdeep": "^4.6.1",
     "lodash.forown": "^4.0.0",

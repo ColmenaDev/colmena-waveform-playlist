@@ -19,7 +19,7 @@ function logError(err) {
 
 playlist = WaveformPlaylist.init({
   samplesPerPixel: 3000,
-  waveHeight: 100,
+  waveHeight: 130,
   container: document.getElementById("playlist"),
   state: 'cursor',
   colors: {
@@ -30,7 +30,10 @@ playlist = WaveformPlaylist.init({
   timescale: true,
   controls: {
     show: true, //whether or not to include the track controls
-    width: 200 //width of controls in pixels
+    width: 80, //width of controls in pixels
+    widgets: {
+      template: 'lean'
+    }
   },
   seekStyle : 'line',
   zoomLevels: [500, 1000, 3000, 5000]
