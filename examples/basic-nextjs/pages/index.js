@@ -2,11 +2,37 @@ import React, { useCallback, useState, useRef } from "react";
 import EventEmitter from "events";
 import WaveformPlaylist from "colmena-waveform-playlist";
 import { saveAs } from "file-saver";
+import { arrayBufferToBlob } from 'blob-util';
+import lodash from "lodash";
 
 export default function Home() {
   const [ee] = useState(new EventEmitter());
   const setUpChain = useRef();
   let playlist;
+
+  const inputFileRef = useRef(null);
+
+  const handleImportAudioFromDevice = () => {
+    if (!inputFileRef || !inputFileRef.current) return;
+    const clk = inputFileRef?.current;
+    clk.click();
+  };
+
+  const onSelectFile = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      let blob_;
+      const file = e.target.files[0];
+      const { type, name } = file;
+      blob_ = arrayBufferToBlob(file);
+      ee.emit('importZipProject', blob_)
+      console.log(file);
+    }
+  };
+
+  let debounce_fun = lodash.debounce(function () {
+    console.log("debounce_fun");
+    ee.emit("commit");
+  }, 2000);
 
   const container = useCallback(
     (node) => {
@@ -68,6 +94,15 @@ export default function Home() {
             .catch(logError);
         }
 
+        ee.on('audiosourceserror', (err) => {
+          console.log("audiosourceserror event", err);
+        });
+
+        ee.on('shift', (deltaTime, track) => {
+          debounce_fun();
+          console.log("shift event", deltaTime, track);
+        });
+
         ee.on("audiorenderingstarting", function (offlineCtx, a) {
           // Set Tone offline to render effects properly.
           // const offlineContext = new Tone.OfflineContext(offlineCtx);
@@ -123,7 +158,7 @@ export default function Home() {
   }
 
   function handleImportZipProject(){
-    ee.emit("importZipProject");
+    handleImportAudioFromDevice();
   }
 
   const playoutEvents = ['pause', 'play', 'stop', 'rewind', 'fastforward', 'record', 'clear'];
@@ -168,6 +203,12 @@ export default function Home() {
   return (
     <div style={{ margin: 10 }}>
       <main>
+      <input
+        type="file"
+        ref={inputFileRef}
+        onChange={onSelectFile}
+        style={{ display: 'none' }}
+      />
         <Wrapper>
           {playoutEvents.map(value => 
             <button style={{ backgroundColor: value === "record" ? 'lightsalmon' : 'ghostwhite' }} onClick={() =>  ee.emit(value)}>{value}</button>
