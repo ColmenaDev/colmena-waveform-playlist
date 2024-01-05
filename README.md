@@ -2,8 +2,7 @@
 
 ## Colmena Audio Editor
 
-This is Colmena Audio Editor, a fork from the great Waveform-Playlist! Be aware that the following text is still from the original
-waveform-playlist project and it is not updated yet to match colmena-waveform-playlist new features, like track cut and split, and new export functionality which adds support for mp3 and aac export.
+This is Colmena Audio Editor, a fork from the great Waveform-Playlist! Much of the text in this document preserves the original description of the waveform-playlist project. It is worth mentioning that new and important events were added to the project, they are: undo, redo, commit, split, cut, import and export project. Details of how each one works can be found in the Playlist Events section of this document.
 
 More at: https://blog.colmena.media/
 
@@ -380,7 +379,14 @@ An example of using the event emitter to control the playlist can be found in [/
 | `record`              | _none_                                               | Starts recording an audio track. Begins playout of other tracks in playlist if there are any.                                                                                                        |
 | `zoomin`              | _none_                                               | Changes zoom level to the next smallest entry (if one exists) from the array `zoomLevels`.                                                                                                           |
 | `zoomout`             | _none_                                               | Changes zoom level to the next largest entry (if one exists) from the array `zoomLevels`.                                                                                                            |
-| `trim`                | _none_                                               | Trims currently active track to the cursor selection.                                                                                                                                                |
+| `trim`                | _none_                                               | Trims currently active track to the cursor selection.                                                                                                                  
+| `cut` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Removes a portion of a track according to a predefined selection.     
+| `split` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Divides a track into two parts.   |
+| `commit` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Used to confirm any edit on the track. This event must always precede the `undo` and `redo` events.   |
+| `undo` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Undo an edit made on the track. Before triggering this event, the commit event must be executed to `confirm` the changes.   |
+| `redo` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Redo an edit made on the track. Before triggering this event, the commit event must be executed to `confirm` the changes.   |
+| `importZipProject` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Allows you to import a project to edit the tracks independently. Only projects exported from waveform will be considered valid for this action.   |
+| `exportZipProject` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>              | _none_                                               | Exports the project in .zip format, with all audio tracks and edits preserved.   |
 | `statechange`         | `cursor` / `select` / `fadein` / `fadeout` / `shift` | Changes interaction state to the state given.                                                                                                                                                        |
 | `fadetype`            | `logarithmic` / `linear` / `sCurve` / `exponential`  | Changes playlist default fade type.                                                                                                                                                                  |
 | `newtrack`            | `File`                                               | Loads `File` object into the playlist.                                                                                                                                                               |
@@ -418,6 +424,7 @@ An example of using the event emitter to control the playlist can be found in [/
 | `audiorenderingstarting`  | `offlineCtx, setUpPromiseArray` | Event fired after the OfflineAudioContext is created before any rendering begins. If any setup is async before offline redering, push a promise to the setUpPromiseArray.                                           |
 | `audiorenderingfinished`  | `type, data`                    | Return the result of the rendering in the desired format. `type` can be `buffer` or `wav` and can be used to dertermine the `data` type. When `type` is `wav`, data is a `blob` object that represent the wav file. |
 | `stereopan`               | `panvalue, track`               | Pan value of `track` has been changed to `panvalue`                                                                                                                                                                 |
+| `zipProjectExported` <span style='background-color: #ADFF2F; color: #2F4F4F; padding: 4px; font-size: 12px; font-weight: bold'>new feature</span>               | `blob`               | Sends the blob to download the project, after triggering the `exportZipProject` event.                                                                                                                                                                |
 
 ## Tests
 
