@@ -1475,11 +1475,18 @@ export default class {
                     track.clips.forEach(clip => {
                       // console.log('checking clip', clip.path)
 
+                      let oldUrl = clip.path;
+
                       let clipFileName = clip.path.split('/').pop()
 
                       if (clipFileName == zipEntry.name.substring(5)) {
                         clip.path = newUrl
                         // console.log('updating clip', clip.path, 'to', newUrl)
+                      }
+
+                      //Find all the references in the in all the history versions as well and update them
+                      for (let i = 0; i < playlist.hertzjsProject.history.stack.length; i++) {
+                        playlist.hertzjsProject.history.stack[i] = playlist.hertzjsProject.history.stack[i].replace(oldUrl, newUrl)
                       }
 
                     })
