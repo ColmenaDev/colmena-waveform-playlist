@@ -1,7 +1,7 @@
 {
   "name": "colmena-waveform-playlist",
   "description": "Multiple track web audio editor and player with waveform preview",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "main": "build/waveform-playlist.umd.js",
   "author": "Colmena",
   "license": "MIT",
@@ -62,7 +62,9 @@
     "webpack:server": "webpack serve --static dist/ --color --host 0.0.0.0 --config webpack.config.dev.js",
     "start": "npm run webpack:server",
     "dev": "npm run jekyll:dev && npm run jekyll:scss && npm run webpack:server",
-    "website": "npm run build && npm run ghpages"
+    "website": "npm run build && npm run ghpages",
+    "next": "npm link && npx webpack && cd examples/basic-nextjs && npm link colmena-waveform-playlist && cd ../..",
+    "demo": "cd examples/basic-nextjs && npm run dev"
   },
   "repository": {
     "type": "git",

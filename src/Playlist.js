@@ -1390,7 +1390,12 @@ export default class {
     zip.file('project.json', JSON.stringify(this.hertzjsProject));
     zip.file('README.txt', 'Nothing here!');
 
+    let saved = {};
+
     const fetchPromises = [];
+
+    if (!this.hertzjsProject)
+      this.hertzjsProject.commit();
 
     //Now we'll be saving all the media files for the current version
     this.hertzjsProject.tracks.forEach(track => {
@@ -1405,12 +1410,39 @@ export default class {
 
             let fileName = clip.path.split('/').pop()
             zip.file('blob.' + fileName, data)
+            saved[fileName] = true;
 
           });
           fetchPromises.push(fetchPromise)
         }
       })
     })
+
+    //Find all the references in the history and 
+    for (let i = 1; i < playlist.hertzjsProject.history.stack.length; i++) {
+      let versionObj = JSON.parse(playlist.hertzjsProject.history.stack[i])
+      versionObj.tracks.forEach((track) => {
+        track.clips.forEach(clip => {
+          if (clip.path.indexOf("blob:") >= 0) {
+
+            //console.log('adding the file', clip.path)
+
+            const fetchPromise = fetch(clip.path).then(resp => resp.blob()).then(data => {
+              //console.log('adding file to zip', data)
+
+              let fileName = clip.path.split('/').pop()
+              if (!saved[fileName]) {
+                saved[fileName] = true;
+
+                zip.file('blob.' + fileName, data)
+              }
+
+            });
+            fetchPromises.push(fetchPromise)
+          }
+        })
+      })
+    }
 
     return Promise.all(fetchPromises).then(() => {
       // Generate the ZIP file after all operations are finished
@@ -1503,6 +1535,7 @@ export default class {
 
             // console.log('copying from hertzjs')
             playlist.copyFromHertzjs(playlist.hertzjsProject);
+            playlist.purgeHistory();
 
           })
 
@@ -1519,6 +1552,13 @@ export default class {
 
     });
 
+  }
+
+  purgeHistory() {
+    const playlist = this;
+    let historyCount = playlist.hertzjsProject.history.count();
+    if (historyCount > 2)
+      playlist.hertzjsProject.history.forget(historyCount - 2)
   }
 }
 
